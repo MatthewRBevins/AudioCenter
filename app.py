@@ -3,6 +3,17 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL
 app = Flask(__name__)
+from spleeter.separator import Separator
+from spleeter.audio.adapter import AudioAdapter
+import os
+class Separate():
+    def __init__(self, file, actualname):
+        separator = Separator('spleeter:2stems')
+        audio_loader = AudioAdapter.default()
+        sample_rate = 44100
+        waveform, _ = audio_loader.load(file, sample_rate=sample_rate)
+        separator.separate_to_file(file, 'static/output')
+        self.filenames = ['static/output/' + actualname + '/accompaniment.wav', 'static/output/' + actualname + '/vocals.wav']
 
 app.config['MYSQL_HOST'] = "mysql.2223.lakeside-cs.org"
 app.config['MYSQL_USER'] = "student2223"
@@ -22,3 +33,18 @@ def executeQuery(query, queryVars):
     mysql.connection.commit()
     #Fetch data from query
     return cursor.fetchall()
+
+@app.route('/')
+def index():
+    return render_template('index.html.j2')
+
+@app.route('/results', methods=['POST','GET'])
+def results():
+    nnames = []
+    if request.method == "POST":
+        f = request.files["ff"]
+        filename = 'static/audio' + f.filename
+        f.save(filename)
+        s = Separate(filename, f.filename.replace(".wav",""))
+        nnames = s.filenames
+    return render_template('results.html.j2', filenames = nnames)
