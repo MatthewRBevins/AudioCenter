@@ -12,7 +12,7 @@ class Separate():
         audio_loader = AudioAdapter.default()
         sample_rate = 44100
         waveform, _ = audio_loader.load(file, sample_rate=sample_rate)
-        separator.separate_to_file(file, 'static/output')
+        separator.separate_to_file(file, 'statiwc/output')
         self.filenames = ['static/output/' + actualname + '/accompaniment.wav', 'static/output/' + actualname + '/vocals.wav']
 
 app.config['MYSQL_HOST'] = "mysql.2223.lakeside-cs.org"
