@@ -6,6 +6,9 @@ app = Flask(__name__)
 from spleeter.separator import Separator
 from spleeter.audio.adapter import AudioAdapter
 import os
+import KeyChange as kc
+import Aggregate as ag
+
 class Separate():
     def __init__(self, file, actualname):
         separator = Separator('spleeter:2stems')
@@ -42,9 +45,14 @@ def index():
 def results():
     nnames = []
     if request.method == "POST":
-        f = request.files["ff"]
-        filename = 'static/audio' + f.filename
-        f.save(filename)
-        s = Separate(filename, f.filename.replace(".wav",""))
-        nnames = s.filenames
+        if request.values.get("type") == "spleeter":
+            f = request.files["ff"]
+            filename = 'static/audio' + f.filename
+            f.save(filename)
+            s = Separate(filename, f.filename.replace(".wav",""))
+            nnames = s.filenames
+        elif request.values.get("type") == "amplify":
+            ag.amplify('hi',5)
+        elif request.values.get("type") == "keychange":
+            kc.keyChange('hi',5,'hi')
     return render_template('results.html.j2', filenames = nnames)
