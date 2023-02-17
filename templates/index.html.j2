@@ -2,7 +2,10 @@
 {%block body%}
 <h1>AudioCenter</h1>
 <form method="POST" action="results" enctype="multipart/form-data">
-    <input type="file" name="ff" accept=".wav">
+    <input type="file" name="ff" accept=".wav"><br>
+    Amplify: <input type="radio" name="type" value="amplify"><br>
+    Key Change: <input type="radio" name="type" value="keychange"><br>
+    Spleeter: <input type="radio" name="type" value="spleeter"><br>
     <input type="submit" value="submit" name="submit">
 </form>
 {%endblock%}
