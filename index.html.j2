@@ -1,0 +1,31 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+        <title>Audio Center</title>
+{% endblock %}
+
+{% block body %}        
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <div class="fade">
+        <div id="buttontext"><a href="." class="plainlink">Audio Center</a>
+        <span class="rightnav">
+            <span class="topnav">
+                {% if login==True %}
+                    <a href="logout">Log Out</a>
+                {% else %}
+                    <a href="login">Log In</a>
+                {% endif %}
+            </span>
+        </span>
+        </div> 
+    </div>
+    <div class="bg">
+        <br><br><br>
+        <div id="bgtext">
+            <div class="fadein">
+                <br> <br>
+                <p>&nbsp;Audio Center</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
