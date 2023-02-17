@@ -2,21 +2,9 @@ from flask import Flask, render_template, request, redirect, session
 from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL
+import AudioTools
+import time
 app = Flask(__name__)
-from spleeter.separator import Separator
-from spleeter.audio.adapter import AudioAdapter
-import os
-import KeyChange as kc
-import Aggregate as ag
-
-class Separate():
-    def __init__(self, file, actualname):
-        separator = Separator('spleeter:2stems')
-        audio_loader = AudioAdapter.default()
-        sample_rate = 44100
-        waveform, _ = audio_loader.load(file, sample_rate=sample_rate)
-        separator.separate_to_file(file, 'statiwc/output')
-        self.filenames = ['static/output/' + actualname + '/accompaniment.wav', 'static/output/' + actualname + '/vocals.wav']
 
 app.config['MYSQL_HOST'] = "mysql.2223.lakeside-cs.org"
 app.config['MYSQL_USER'] = "student2223"
@@ -43,16 +31,17 @@ def index():
 
 @app.route('/results', methods=['POST','GET'])
 def results():
-    nnames = []
+    filenames = []
     if request.method == "POST":
+        f = request.files["ff"]
+        t = time.localtime()
+        #filename = '/static/audio/' + f.filename + ' [' + str(int(time.time())) + ']'
+        filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + str(int(time.time())) + '].' + f.filename.split('.')[1]
+        f.save(filename)
         if request.values.get("type") == "spleeter":
-            f = request.files["ff"]
-            filename = 'static/audio' + f.filename
-            f.save(filename)
-            s = Separate(filename, f.filename.replace(".wav",""))
-            nnames = s.filenames
+            filenames = AudioTools.split(filename, 'static/output/', 2)
         elif request.values.get("type") == "amplify":
-            ag.amplify('hi',5)
+            filenames = AudioTools.amplify(filename, 'static/output',4)
         elif request.values.get("type") == "keychange":
-            kc.keyChange('hi',5,'hi')
-    return render_template('results.html.j2', filenames = nnames)
+            filenames = AudioTools.keyChange(filename, 'static/output', 4)
+    return render_template('results.html.j2', filenames = filenames)
