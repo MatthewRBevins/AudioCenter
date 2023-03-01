@@ -29,19 +29,30 @@ def executeQuery(query, queryVars):
 def index():
     return render_template('index.html.j2')
 
-@app.route('/results', methods=['POST','GET'])
-def results():
-    filenames = []
+@app.route('/editor', methods=["GET", "POST"])
+def editor():
+    output = None
     if request.method == "POST":
-        f = request.files["ff"]
-        t = time.localtime()
-        #filename = '/static/audio/' + f.filename + ' [' + str(int(time.time())) + ']'
-        filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + str(int(time.time())) + '].' + f.filename.split('.')[1]
-        f.save(filename)
-        if request.values.get("type") == "spleeter":
-            filenames = AudioTools.split(filename, 'static/output/', 2)
-        elif request.values.get("type") == "amplify":
-            filenames = AudioTools.amplify(filename, 'static/output',4)
-        elif request.values.get("type") == "keychange":
-            filenames = AudioTools.keyChange(filename, 'static/output', 4)
-    return render_template('results.html.j2', filenames = filenames)
+        if request.values.get("form") == "1":
+            f = request.files["file"]
+            t = str(int(time.time()))
+            filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+            f.save(filename)
+            session["filename"] = filename
+        elif request.values.get("form") == "2":
+            if request.values.get("detect"):
+                output = AudioTools.detectSong(session["filename"])
+            elif request.values.get("keychange"):
+                output = AudioTools.keyChange(session["filename"], 'static/output', 4)
+            elif request.values.get("amplify"):
+                output = AudioTools.amplify(session["filename"], 'static/output',4)
+            elif request.values.get("split"):
+                output = AudioTools.split(session["filename"], 'static/output/', 2)
+            elif request.values.get("waveform"):
+                output = AudioTools.displayWaveform(session["filename"])
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=output)
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    return render_template('login.html.j2')
+

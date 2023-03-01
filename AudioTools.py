@@ -4,6 +4,24 @@ from spleeter.separator import Separator
 from spleeter.audio.adapter import AudioAdapter
 import librosa
 import soundfile as sf
+import asyncio
+from shazamio import Shazam, Serialize
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+
+async def songDetectAsync(file):
+    shazam = Shazam()
+    start = time.time()
+    out = await shazam.recognize_song(file)
+    serialized = Serialize.full_track(out)
+    end = time.time()
+    return serialized
+    
+def detectSong(file):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return loop.run_until_complete(songDetectAsync(file))
 
 def keyChange(file, output, steps):
     y, sr = librosa.load(file)
@@ -11,7 +29,7 @@ def keyChange(file, output, steps):
     sf.write(output+file.split("/")[len(file.split("/"))-1], y_shifted, sr, 'PCM_24')
     return [output+file]
 
-def amplify(file, factor): 
+def amplify(file, output, factor): 
     factor = factor #Adjust volume by factor
     with wave.open(file, 'rb') as wav:
         p = wav.getparams()
@@ -35,3 +53,21 @@ def split(file, output, stems):
     actualname = file.split("/")[len(file.split("/"))-1].split(".wav")[0]
     print("*************  " + actualname)
     return [output + actualname + '/accompaniment.wav', output + actualname + '/vocals.wav']
+
+def displayWaveform(file):
+    wav_obj = wave.open(file, 'rb')
+    sample_freq = wav_obj.getframerate()
+    n_samples = wav_obj.getnframes()
+    t_audio = n_samples/sample_freq
+    n_channels = wav_obj.getnchannels()
+    signal_wave = wav_obj.readframes(n_samples)
+    signal_array = np.frombuffer(signal_wave, dtype=np.int16)
+    times = np.linspace(0, n_samples/sample_freq, num=n_samples)
+    plt.figure(figsize=(15, 5))
+    plt.plot(times, signal_array)
+    plt.title('Waveform Plot')
+    plt.ylabel('Signal Value')
+    plt.xlabel('Time (s)')
+    plt.xlim(0, t_audio)
+    plt.show()
+    return True
