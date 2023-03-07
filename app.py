@@ -32,6 +32,9 @@ def index():
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     output = None
+    out = dict()
+    if not session or not session["filename"]:
+        session["filename"] = None
     if request.method == "POST":
         if request.values.get("form") == "1":
             f = request.files["file"]
@@ -41,16 +44,25 @@ def editor():
             session["filename"] = filename
         elif request.values.get("form") == "2":
             if request.values.get("detect"):
-                output = AudioTools.detectSong(session["filename"])
+                out["type"] = "detect"
+                output = dict()
+                output["title"] = AudioTools.detectSong(session["filename"]).get("track").get("title")
+                output["artist"] = AudioTools.detectSong(session["filename"]).get("track").get("subtitle")
+                output["image"] = AudioTools.detectSong(session["filename"]).get("track").get("images").get("coverart")
             elif request.values.get("keychange"):
-                output = AudioTools.keyChange(session["filename"], 'static/output', 4)
+                out["type"] = "files"
+                output = AudioTools.keyChange(session["filename"], 'static/output/', 4)
             elif request.values.get("amplify"):
-                output = AudioTools.amplify(session["filename"], 'static/output',4)
+                out["type"] = "files"
+                output = AudioTools.amplify(session["filename"], 'static/output/',4)
             elif request.values.get("split"):
+                out["type"] = "files"
                 output = AudioTools.split(session["filename"], 'static/output/', 2)
             elif request.values.get("waveform"):
+                out["type"] = "waveform"
                 output = AudioTools.displayWaveform(session["filename"])
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=output)
+    out["output"] = output
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():

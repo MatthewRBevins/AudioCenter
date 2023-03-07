@@ -28,7 +28,16 @@
                     <input type="submit" name="submit" value="Upload">
                 </form>
                 <h1>Current File: {{fn}}</h1>
-                {{out}}
+                {%if out.type == "detect"%}
+                    <h1>{{out.output.title}}</h1>
+                    <h2>{{out.output.artist}}</h2>
+                    <img src="{{out.output.image}}">
+                {%elif out.type == "files"%}
+                {%for i in out.output%}
+                    {%set ffn = i.split('/')%}
+                    <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a>
+                {%endfor%}
+                {%endif%}
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="form" value="2">
                     <input type="submit" name="detect" value="Detect Song">
