@@ -9,7 +9,10 @@ from shazamio import Shazam, Serialize
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import subprocess
 
+def mp3towav(file, newfile):
+    subprocess.call(['ffmpeg', '-i', file,newfile])
 async def songDetectAsync(file):
     shazam = Shazam()
     start = time.time()
