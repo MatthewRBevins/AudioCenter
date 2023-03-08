@@ -1,11 +1,28 @@
-{%extends "base.html.j2"%}
-{%block body%}
-<h1>AudioCenter</h1>
-<form method="POST" action="results" enctype="multipart/form-data">
-    <input type="file" name="ff" accept=".wav"><br>
-    Amplify: <input type="radio" name="type" value="amplify"><br>
-    Key Change: <input type="radio" name="type" value="keychange"><br>
-    Spleeter: <input type="radio" name="type" value="spleeter"><br>
-    <input type="submit" value="submit" name="submit">
-</form>
-{%endblock%}
+{% extends "base.html.j2" %}
+
+{% block head %}
+        <title>Audio Center</title>
+{% endblock %}
+
+{% block body %}        
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <div class="fade">
+        <div id="buttontext"><a href="." class="plainlink">Audio Center</a>
+        <span class="rightnav">
+            <span class="topnav">
+                <a href="login">Log In</a>
+                <a href="editor">Editor</a>
+            </span>
+        </span>
+        </div> 
+    </div>
+    <div class="bg">
+        <br><br><br>
+        <div id="bgtext">
+            <div class="fadein">
+                <br><br>
+                <p>Audio Center</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

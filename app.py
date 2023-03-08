@@ -2,21 +2,9 @@ from flask import Flask, render_template, request, redirect, session
 from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL
+import AudioTools
+import time
 app = Flask(__name__)
-from spleeter.separator import Separator
-from spleeter.audio.adapter import AudioAdapter
-import os
-import KeyChange as kc
-import Aggregate as ag
-
-class Separate():
-    def __init__(self, file, actualname):
-        separator = Separator('spleeter:2stems')
-        audio_loader = AudioAdapter.default()
-        sample_rate = 44100
-        waveform, _ = audio_loader.load(file, sample_rate=sample_rate)
-        separator.separate_to_file(file, 'statiwc/output')
-        self.filenames = ['static/output/' + actualname + '/accompaniment.wav', 'static/output/' + actualname + '/vocals.wav']
 
 app.config['MYSQL_HOST'] = "mysql.2223.lakeside-cs.org"
 app.config['MYSQL_USER'] = "student2223"
@@ -41,18 +29,42 @@ def executeQuery(query, queryVars):
 def index():
     return render_template('index.html.j2')
 
-@app.route('/results', methods=['POST','GET'])
-def results():
-    nnames = []
+@app.route('/editor', methods=["GET", "POST"])
+def editor():
+    output = None
+    out = dict()
+    if not session or not session["filename"]:
+        session["filename"] = None
     if request.method == "POST":
-        if request.values.get("type") == "spleeter":
-            f = request.files["ff"]
-            filename = 'static/audio' + f.filename
+        if request.values.get("form") == "1":
+            f = request.files["file"]
+            t = str(int(time.time()))
+            filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename)
-            s = Separate(filename, f.filename.replace(".wav",""))
-            nnames = s.filenames
-        elif request.values.get("type") == "amplify":
-            ag.amplify('hi',5)
-        elif request.values.get("type") == "keychange":
-            kc.keyChange('hi',5,'hi')
-    return render_template('results.html.j2', filenames = nnames)
+            session["filename"] = filename
+        elif request.values.get("form") == "2":
+            if request.values.get("detect"):
+                out["type"] = "detect"
+                output = dict()
+                output["title"] = AudioTools.detectSong(session["filename"]).get("track").get("title")
+                output["artist"] = AudioTools.detectSong(session["filename"]).get("track").get("subtitle")
+                output["image"] = AudioTools.detectSong(session["filename"]).get("track").get("images").get("coverart")
+            elif request.values.get("keychange"):
+                out["type"] = "files"
+                output = AudioTools.keyChange(session["filename"], 'static/output/', 4)
+            elif request.values.get("amplify"):
+                out["type"] = "files"
+                output = AudioTools.amplify(session["filename"], 'static/output/',4)
+            elif request.values.get("split"):
+                out["type"] = "files"
+                output = AudioTools.split(session["filename"], 'static/output/', 2)
+            elif request.values.get("waveform"):
+                out["type"] = "waveform"
+                output = AudioTools.displayWaveform(session["filename"])
+    out["output"] = output
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out)
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    return render_template('login.html.j2')
+

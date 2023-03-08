@@ -1,0 +1,52 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+        <title>Audio Center</title>
+{% endblock %}
+
+{% block body %}        
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <div class="fade">
+        <div id="buttontext"><a href="." class="plainlink">Audio Center</a>
+        <span class="rightnav">
+            <span class="topnav">
+                <a href="login">Log In</a>
+                <a href="editor">Editor</a>
+            </span>
+        </span>
+        </div> 
+    </div>
+    <div class="bg">
+        <br><br><br>
+        <div id="bgtext">
+            <div class="fadein">
+                <br><br>
+                <p>Editor</p>
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="form" value="1">
+                    <input type="file" name="file">
+                    <input type="submit" name="submit" value="Upload">
+                </form>
+                <h1>Current File: {{fn}}</h1>
+                {%if out.type == "detect"%}
+                    <h1>{{out.output.title}}</h1>
+                    <h2>{{out.output.artist}}</h2>
+                    <img src="{{out.output.image}}">
+                {%elif out.type == "files"%}
+                {%for i in out.output%}
+                    {%set ffn = i.split('/')%}
+                    <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a>
+                {%endfor%}
+                {%endif%}
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="form" value="2">
+                    <input type="submit" name="detect" value="Detect Song">
+                    <input type="submit" name="keychange" value="Key Change">
+                    <input type="submit" name="amplify" value="Amplify">
+                    <input type="submit" name="split" value="Split">
+                    <input type="submit" name="waveform" value="Display Waveform">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
