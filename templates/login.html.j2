@@ -1,28 +1,41 @@
 {% extends "base.html.j2" %}
 
 {% block head %}
-        <title>Audio Center</title>
+        <title>Log In</title>
 {% endblock %}
 
-{% block body %}        
-    <link rel="stylesheet" type="text/css" href="static/style.css"/>
-    <div class="fade">
-        <div id="buttontext"><a href="." class="plainlink">Audio Center</a>
-        <span class="rightnav">
-            <span class="topnav">
-                <a href="login">Log In</a>
-                <a href="editor">Editor</a>
-            </span>
-        </span>
-        </div> 
-    </div>
-    <div class="bg">
-        <br><br><br>
-        <div id="bgtext">
-            <div class="fadein">
-                <br><br>
-                <p>Log In</p>
-            </div>
+{% block body %}
+    <div class="bg2 bg2spinoff" id="fadefast">
+        <div class="fade">
+            <div id="buttontext"><a href="." class="plainlink">Audio Center</a>
+                <span class="rightnav">
+                    <span class="topnav">
+                        <a href="signup">Sign Up</a>
+                        <a href="archive">Archive</a>
+                        <a href="about">About</a>
+                    </span>
+                </span>
+            </div> 
+        </div>
+        <br> <br> <br> 
+        <div class="fadein smtext" id="plain">
+            <br>
+            {% if invalid %}
+                <div class="error">
+                    <p>Oops! Invalid username or password.</p>
+                </div>
+            {% endif %}
+            <h1>Log In</h1>
+            <form method="POST" action="login"> 
+                Username: <br>
+                <input type="text" name="username" value="" required> <br> <br>
+                Password: <br> 
+                <input type="password" name="paswd" value="" required> <br> <br>
+                <input type="submit" value="Log In">
+            </form>
+            <br> 
+            <br>
+            <a href="signup">Don't have an account? Click here</a>
         </div>
     </div>
 {% endblock %}
