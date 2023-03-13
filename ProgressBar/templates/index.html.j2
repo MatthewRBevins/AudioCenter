@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Insert Title</title>
+        <link rel="stylesheet" type="text/css" href="static/style.css"/>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="static/progress.js"></script>
+        <script>
+        $(document).ready(function(){
+            $("#hide").click(function(){
+                $("#bar").hide();
+            });
+            $(".show").click(function(){
+                $("#bar").show();
+            });
+            $(".show2").click(function(){
+                $("#bar2").show();
+            });
+        });
+        </script>
+    </head>
+    <body>
+        <button id="clickme" class="show show2" onclick="alert(); this.onclick=null; showbar(); hideBar();">Click me</button>
+        <div id="bar" class="counter" style="display:none">0</div>
+        <div id="bar2" class="progressbar" style="display:none">
+            <span class="progress"></span>
+        </div>
+        <button id="proceed" onclick="this.onclick=null; showText();" style="display:none">Proceed</button>
+        <div id="text" style="display:none">
+            <p>Progress bar complete!</p>
+        </div>
+    </body>
+</html>
