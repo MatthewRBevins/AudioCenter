@@ -56,12 +56,10 @@ def editor():
             elif request.values.get("convert"):
                 print("convert")
             elif request.values.get("keychange"):
-                output = AudioTools.keyChange(session["filename"], 'static/output', 4)
                 out["type"] = "files"
-                output = AudioTools.keyChange(session["filename"], 'static/output/', 4)
+                output = AudioTools.keyChange(session["filename"], 'static/output/', 10)
             elif request.values.get("amplify"):
                 print("****************AMPLIFY")
-                output = AudioTools.amplify(session["filename"], 'static/output',4)
                 out["type"] = "files"
                 output = AudioTools.amplify(session["filename"], 'static/output/',4)
             elif request.values.get("split"):
@@ -101,7 +99,6 @@ def signup():
         paswd=request.values.get("paswd") 
         paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
         data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (username,))
-        print(data)
         if len(data)==0:
             paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
             executeQuery("INSERT INTO audiocenter_users VALUES (NULL, %s, %s);", (username, paswdsha))

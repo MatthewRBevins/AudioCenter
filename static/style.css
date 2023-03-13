@@ -32,7 +32,7 @@ form
 }
 
 /* From https://www.w3schools.com/css/tryit.asp?filename=trycss_form_button and https://superdevresources.com/css-button-glow-effect/*/
-input[type=button], input[type=submit], input[type=reset] 
+input[type=button], input[type=submit], input[type=reset], input[type=file]
 {
     text-decoration: none;
     color: rgba(255, 255, 255, 0.8);
@@ -45,7 +45,7 @@ input[type=button], input[type=submit], input[type=reset]
     cursor: pointer;
 }
 
-input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover 
+input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover , input[type=file]
 {
     color: rgba(255, 255, 255, 1);
     box-shadow: 0 5px 15px rgba(13, 48, 8, .4);
