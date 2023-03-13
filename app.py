@@ -30,12 +30,12 @@ def executeQuery(query, queryVars):
 
 @app.route('/')
 def index():
-    return render_template('index.html.j2')
+    return render_template('index.html.j2', time=time)
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     output = None
-    out = dict()
+    out = dict() 
     if not session or not session["filename"]:
         session["filename"] = None
     if request.method == "POST":

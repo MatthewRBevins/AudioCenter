@@ -76,11 +76,13 @@ def displayWaveform(file):
     signal_wave = wav_obj.readframes(n_samples)
     signal_array = np.frombuffer(signal_wave, dtype=np.int16)
     times = np.linspace(0, n_samples/sample_freq, num=len(signal_array))
-    plt.figure(figsize=(15, 5))
+    '''plt.figure(figsize=(15, 5))
     plt.plot(times, signal_array)
     plt.title('Waveform Plot')
     plt.ylabel('Signal Value')
     plt.xlabel('Time (s)')
     plt.xlim(0, t_audio)
-    plt.show()
-    return True
+    plt.show()'''
+    out = dict()
+    out["times"] = times
+    return out

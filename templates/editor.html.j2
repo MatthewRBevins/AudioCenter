@@ -35,7 +35,41 @@
                     <input type="submit" name="split" value="Split">
                     <input type="submit" name="waveform" value="Display Waveform">
                 </form>
+                {{out.output[1]}}
+                <canvas id="graph"></canvas>
             </div>
         </div>
     </div>
+    <script>
+        //var xValues = //[50,60,70,80,90,100,110,120,130,140,150];
+        //var yValues = //[7,8,8,9,9,9,10,11,14,14,15];
+        function drawGraph(xValues, yValues) {
+            new Chart("graph", {
+            type: "line",
+            data: {
+                labels: xValues,
+                datasets: [{
+                fill: false,
+                lineTension: 0,
+                backgroundColor: "rgba(0,0,255,1.0)",
+                borderColor: "rgba(0,0,255,0.1)",
+                data: yValues
+                }]
+            },
+            options: {
+                legend: {display: false},
+                scales: {
+                yAxes: [{ticks: {min: 6, max:16}}],
+                }
+            }
+            });
+        }
+    </script>
+    {%if out.type == "waveform"%}
+    {{out.output[0]|list}}
+    {%endif%}
+    <script>
+        var hi = 0;
+        console.log(hi);
+    </script>
 {% endblock %}

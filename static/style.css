@@ -243,9 +243,11 @@ h3
   float:left;
   color:#f2f2f2;
   text-align:center;
-  padding:0px 30px;
+  padding: 20px;
   text-decoration:none;
   font-size:16px;
+  margin: 0px;
+  display: absolute;
 }
  
 /* Change the color of links on hover */
@@ -284,10 +286,10 @@ h3
 /* Modified from Mozilla CSS Docs */
 .fade 
 {
+    padding: 20px;
     background-color:#1b1b1b;
     color:#fff;
     transition:background-color 1s;
-    padding:7px; 
     width:100%;
     z-index:1;
     top:0;

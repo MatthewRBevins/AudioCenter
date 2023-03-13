@@ -11,7 +11,7 @@ def displayWaveform(file):
     n_channels = wav_obj.getnchannels()
     signal_wave = wav_obj.readframes(n_samples)
     signal_array = np.frombuffer(signal_wave, dtype=np.int16)
-    times = np.linspace(0, n_samples/sample_freq, num=n_samples)
+    times = np.linspace(0, n_samples/sample_freq, num=len(signal_array))
     fig = plt.figure(figsize=(15, 5))
     plt.plot(times, signal_array)
     plt.title('Waveform Plot')
