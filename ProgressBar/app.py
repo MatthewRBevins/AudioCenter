@@ -10,4 +10,5 @@ mysql = MySQL(app)
 
 @app.route('/')
 def index(): 
-    return render_template('index.html.j2')
+    time=50 #Control time here, 50 is default (5 sec)
+    return render_template('index.html.j2', time=time)

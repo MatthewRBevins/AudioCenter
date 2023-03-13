@@ -1,4 +1,4 @@
-async function alert(){
+async function alert(time){
   $(document).ready(function() {
 
     var progress = $('.progressbar .progress')
@@ -15,7 +15,7 @@ async function alert(){
 
         setTimeout( function() {
           counterInit( fValue, lValue );
-        }, 50 );
+        }, time );
 
 
       }
@@ -24,7 +24,7 @@ async function alert(){
 
     counterInit( 0, 100 );
   });
-  await hideBar()
+  await hideBar(100*time + 1500)
   document.getElementById("clickme").style.display="none";
   document.getElementById("proceed").style.display="block";
   document.getElementById("bar").style.display = "none";
@@ -34,10 +34,10 @@ async function alert(){
 function showBar() {
   document.getElementById("bar").style.display = "";
 }
-const hideBar = async () => {
+async function hideBar(time) {
   return new Promise((res)=>{
     setTimeout(()=>{
-      res();}, 6500);});
+      res();}, time);});
 }
 
 function showText() {

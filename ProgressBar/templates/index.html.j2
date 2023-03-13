@@ -20,7 +20,7 @@
         </script>
     </head>
     <body>
-        <button id="clickme" class="show show2" onclick="alert(); this.onclick=null; showbar(); hideBar();">Click me</button>
+        <button id="clickme" class="show show2" onclick="alert({{time}}); this.onclick=null; showBar(); hideBar({{time}});">Click me</button>
         <div id="bar" class="counter" style="display:none">0</div>
         <div id="bar2" class="progressbar" style="display:none">
             <span class="progress"></span>
