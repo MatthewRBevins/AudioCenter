@@ -4,6 +4,9 @@
  * @license BSD-3-Clause
  * MODIFIED BY MATTHEW BEVINS
  */
+var backend = null;
+var globalWave = null;
+var currentBuffer = null;
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -112,6 +115,7 @@ var CanvasEntry = /*#__PURE__*/function () {
     key: "initWave",
     value: function initWave(element) {
       this.wave = element;
+      globalWave = this.wave;
       this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
     }
 
@@ -125,7 +129,7 @@ var CanvasEntry = /*#__PURE__*/function () {
     key: "initProgress",
     value: function initProgress(element) {
       this.progress = element;
-      this.progressCtx = this.progress.getContext('2d', this.canvasContextAttributes);
+      //this.progressCtx = this.progress.getContext('2d', this.canvasContextAttributes);
     }
 
     /**
@@ -147,6 +151,7 @@ var CanvasEntry = /*#__PURE__*/function () {
       // set wave canvas dimensions
       this.wave.width = width;
       this.wave.height = height;
+      globalWave = this.wave;
       var elementSize = {
         width: elementWidth + 'px'
       };
@@ -170,13 +175,14 @@ var CanvasEntry = /*#__PURE__*/function () {
       this.waveCtx.setTransform(1, 0, 0, 1, 0, 0);
       this.waveCtx.clearRect(0, 0, this.waveCtx.canvas.width, this.waveCtx.canvas.height);
       this.waveCtx.restore();
+      globalWave = this.wave;
 
       // progress
       if (this.hasProgressCanvas) {
-        this.progressCtx.save();
-        this.progressCtx.setTransform(1, 0, 0, 1, 0, 0);
-        this.progressCtx.clearRect(0, 0, this.progressCtx.canvas.width, this.progressCtx.canvas.height);
-        this.progressCtx.restore();
+        //this.progressCtx.save();
+        //this.progressCtx.setTransform(1, 0, 0, 1, 0, 0);
+        //this.progressCtx.clearRect(0, 0, this.progressCtx.canvas.width, this.progressCtx.canvas.height);
+        //this.progressCtx.restore();
       }
     }
 
@@ -192,7 +198,7 @@ var CanvasEntry = /*#__PURE__*/function () {
     value: function setFillStyles(waveColor, progressColor) {
       this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
       if (this.hasProgressCanvas) {
-        this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
+        //this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
       }
     }
 
@@ -236,7 +242,7 @@ var CanvasEntry = /*#__PURE__*/function () {
         // Reflect the waveform across the line y = -x
         this.waveCtx.setTransform(0, 1, 1, 0, 0, 0);
         if (this.hasProgressCanvas) {
-          this.progressCtx.setTransform(0, 1, 1, 0, 0, 0);
+          //this.progressCtx.setTransform(0, 1, 1, 0, 0, 0);
         }
       }
     }
@@ -255,7 +261,7 @@ var CanvasEntry = /*#__PURE__*/function () {
     value: function fillRects(x, y, width, height, radius) {
       this.fillRectToContext(this.waveCtx, x, y, width, height, radius);
       if (this.hasProgressCanvas) {
-        this.fillRectToContext(this.progressCtx, x, y, width, height, radius);
+        //this.fillRectToContext(this.progressCtx, x, y, width, height, radius);
       }
     }
 
@@ -338,7 +344,7 @@ var CanvasEntry = /*#__PURE__*/function () {
     value: function drawLines(peaks, absmax, halfH, offsetY, start, end) {
       this.drawLineToContext(this.waveCtx, peaks, absmax, halfH, offsetY, start, end);
       if (this.hasProgressCanvas) {
-        this.drawLineToContext(this.progressCtx, peaks, absmax, halfH, offsetY, start, end);
+        //this.drawLineToContext(this.progressCtx, peaks, absmax, halfH, offsetY, start, end);
       }
     }
 
@@ -1085,7 +1091,9 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
   }, {
     key: "createElements",
     value: function createElements() {
-      this.progressWave = util.withOrientation(this.wrapper.appendChild(document.createElement('wave')), this.params.vertical);
+        let newDiv = document.createElement('div');
+        newDiv.id = 'progress';
+      this.progressWave = util.withOrientation(this.wrapper.appendChild(newDiv), this.params.vertical);
       this.style(this.progressWave, {
         position: 'absolute',
         zIndex: 3,
@@ -1175,6 +1183,7 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         pointerEvents: 'none'
       });
       entry.initWave(wave);
+      globalWave = wave;
 
       // progress
       if (this.hasProgressCanvas) {
@@ -1647,12 +1656,37 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
   }, {
     key: "updateProgress",
     value: function updateProgress(position) {
+        console.log(1280);
+        console.log(backend.buffer);
+        //console.log(backend.buffer.copyToChannel());
+        this.progressCtx = null;
         console.log(progressing)
         if (progressing) {
-            console.log()
+            console.log("******" + 1280)
             this.style(this.progressWave, {
                 width: (position - left) + 'px'
             });
+            let arrr = backend.buffer.getChannelData(1);
+            let arr = [];
+            for (let i of arrr) {
+              arr.push(i);
+            }
+            arr.push('lmao')
+            console.log(arr.length + " COMPARE " + 1280)
+            let ratio = arr.length/1280;
+            console.log("********")
+            console.log(0);
+            console.log(Math.floor(left*ratio));
+            console.log(left+position);
+            console.log(Math.floor((left+position)*ratio))
+            console.log(arr.length-1);
+            let lll = arr.slice(0,Math.floor(left*ratio))//.concat(arr.slice(Math.floor((left+position)*ratio), arr.length-1))
+            let right = arr.slice(Math.floor((left+position)*ratio), arr.length-1)
+            arr = lll.concat(right);
+            console.log(left + " TO " + (left+position))
+            console.log("NEW LEN: " + arr.length)
+            currentBuffer = arr;
+            document.getElementById("elbruh").value = arr;
             progressing = false;
         }
         else {
@@ -1978,6 +2012,7 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
   }, {
     key: "load",
     value: function load(url, container, peaks, preload) {
+        alert('ll')
       var media = document.createElement(this.mediaType);
       media.controls = this.params.mediaControls;
       media.autoplay = this.params.autoplay || false;
@@ -2020,6 +2055,7 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
   }, {
     key: "_load",
     value: function _load(media, peaks, preload) {
+        alert('oadw')
       // verify media element is valid
       if (!(media instanceof HTMLMediaElement) || typeof media.addEventListener === 'undefined') {
         throw new Error('media parameter is not a valid media element');
@@ -3914,6 +3950,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       _this.params.backend = 'MediaElement';
     }
     _this.Backend = _this.backends[_this.params.backend];
+    backend = _this.Backend;
 
     /**
      * @private map of plugin names that are currently initialised
@@ -4169,6 +4206,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.backend.destroy();
       }
       this.backend = new this.Backend(this.params);
+      backend = this.backend;
       this.backend.init();
       this.fireEvent('backend-created', this.backend);
       this.backend.on('finish', function () {
@@ -5317,6 +5355,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.backend.destroy();
         // clears memory usage
         this.backend = null;
+        backend = this.backend;
       }
       if (this.drawer) {
         this.drawer.destroy();

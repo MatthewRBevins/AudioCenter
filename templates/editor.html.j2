@@ -2,18 +2,25 @@
 
 {% block head %}
         <title>Audio Center</title>
+        <style>
+            #progress {
+                background-color: blue;
+                opacity: 0.5;
+                border-radius: 5px;
+            }
+        </style>
 {% endblock %}
 
 {% block body %}        
-    <div class="bg">
+    <div class="bg4">
         <br><br><br>
         <div id="bgtext">
             <div class="fadein">
-                <p>Editor</p>
+                <h1>Audio Editor</h1>
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="form" value="1">
-                    <input type="file" name="file">
-                    <input type="submit" name="submit" value="Upload">
+                    <input class="btn" type="file" name="file">
+                    <input class="btn btn-primary" type="submit" name="submit" value="Upload">
                 </form>
                 <h5>Current File: {{fn}}</h5>
                 {%if out.type == "detect"%}
@@ -26,16 +33,18 @@
                     <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a>
                 {%endfor%}
                 {%endif%}
+                <div id="waveform"></div>
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="form" value="2">
-                    <input type="submit" name="convert" value="Convert to WAV">
-                    <input type="submit" name="detect" value="Detect Song">
-                    <input type="submit" name="keychange" value="Key Change">
-                    <input type="submit" name="amplify" value="Amplify">
-                    <input type="submit" name="split" value="Split">
-                    <input type="submit" name="waveform" value="Display Waveform">
+                    <input class="btn" type="submit" name="convert" value="Convert to WAV">
+                    <input class="btn" type="submit" name="detect" value="Detect Song">
+                    <input class="btn" type="submit" name="keychange" value="Key Change">
+                    <input class="btn" type="submit" name="amplify" value="Amplify">
+                    <input class="btn" type="submit" name="split" value="Split">
+                    <input class="btn" type="submit" name="waveform" value="Display Waveform">
+                    <input class="btn" type="hidden" name="newdata" id="elbruh">
+                    <input class="btn" type="submit" name="cut" value="Cut">
                 </form>
-                <div id="waveform"></div>
             </div>
         </div>
     </div>
@@ -43,7 +52,14 @@
         var wavesurfer = WaveSurfer.create({
             container: "#waveform",
             waveColor: "violet",
-            progressColor: "purple"
+            progressColor: "purple",
+            plugins: [
+            WaveSurfer.playhead.create({
+                returnOnPause: true,
+                moveOnSeek: true,
+                draw: true
+            })
+        ]
         });
         wavesurfer.load("{{fn}}")
     </script>

@@ -37,6 +37,20 @@ def keyChange(file, output, steps):
     sf.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav", y_shifted, sr, 'PCM_24')
     return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"]
 
+def writeFrames(file, frames, output):
+    samplerate = 48000
+    audio = np.array([np.array(frames), np.array(frames)]).T
+    audio = (audio * (2 ** 15 - 1)).astype("<h")
+    try:
+        os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+    except:
+        pass
+    with wave.open(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/cut.wav", "w") as f:
+        f.setnchannels(2)
+        f.setsampwidth(2)
+        f.setframerate(samplerate)
+        f.writeframes(audio.tobytes())
+
 def amplify(file, output, factor): 
     factor = factor #Adjust volume by factor
     with wave.open(file, 'rb') as wav:
