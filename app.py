@@ -70,9 +70,10 @@ def editor():
                 out["type"] = "waveform"
                 output = AudioTools.displayWaveform(session["filename"])
             elif request.values.get("cut"):
+                out["type"] = "files"
                 newaudio = request.values.get("newdata").split(',')
                 del newaudio[len(newaudio)-1]
-                AudioTools.writeFrames(session["filename"], list(map(float,newaudio)), 'static/output/')
+                output = [AudioTools.writeFrames(session["filename"], list(map(float,newaudio)), 'static/output/')]
     out["output"] = output
     return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out)
 
