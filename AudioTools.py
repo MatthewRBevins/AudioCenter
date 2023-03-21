@@ -81,23 +81,3 @@ def split(file, output, stems):
     actualname = file.split("/")[len(file.split("/"))-1].split(".wav")[0]
     print("*************  " + actualname)
     return [output + actualname + '/accompaniment.wav', output + actualname + '/vocals.wav']
-
-def displayWaveform(file):
-    wav_obj = wave.open(file, 'rb')
-    sample_freq = wav_obj.getframerate()
-    n_samples = wav_obj.getnframes()
-    t_audio = n_samples/sample_freq
-    n_channels = wav_obj.getnchannels()
-    signal_wave = wav_obj.readframes(n_samples)
-    signal_array = np.frombuffer(signal_wave, dtype=np.int16)
-    times = np.linspace(0, n_samples/sample_freq, num=len(signal_array))
-    '''plt.figure(figsize=(15, 5))
-    plt.plot(times, signal_array)
-    plt.title('Waveform Plot')
-    plt.ylabel('Signal Value')
-    plt.xlabel('Time (s)')
-    plt.xlim(0, t_audio)
-    plt.show()'''
-    out = dict()
-    out["times"] = times
-    return out

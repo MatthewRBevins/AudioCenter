@@ -1,6 +1,9 @@
+@import 'bootstrap';
+$primary: 'red';
+
 html
 {
-    height:100%;
+    height:100%; 
 }
 
 #waveform {
@@ -13,7 +16,7 @@ body
 {
     background-color: #000000; 
     margin:0px; 
-    font-family:Arial; 
+    font-family: Arial;
     color:#ffffff; 
     height:100%;
     top:0;
@@ -40,7 +43,7 @@ form
 .bg
 {
     /* All background images from https://www.shutterstock.com/search/fractal */
-    background-image:url("../static/MicFinal.png");
+    background-image:url("/static/images/MicFinal.png");
     background-position:center;
     background-repeat:no-repeat;
     background-size:cover; 
@@ -54,7 +57,7 @@ form
 
 .bg2
 {
-    background-image:url("../static/LoginBackground.png");
+    background-image:url("/static/images/LoginBackground.png");
     background-position:center;
     background-repeat:no-repeat;
     background-size:cover; 
@@ -101,46 +104,6 @@ form
 {
     text-align:center;
     margin:auto;
-}
-
-a:link
-{
-    color:white; 
-}
-
-a:visited
-{
-    color:aqua;
-}
-
-a:hover
-{
-    color:aquamarine;
-}
-
-a:active
-{
-    color:aliceblue;
-}
-
-.plainlink
-{
-    text-decoration: none;
-}
-
-a.plainlink:link 
-{
-    color:#ffffff;
-}
-
-a.plainlink:visited
-{
-    color:white;
-}
-
-a.plainlink:hover 
-{
-    color:white;
 }
 
 .smtext

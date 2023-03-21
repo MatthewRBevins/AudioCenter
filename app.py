@@ -37,6 +37,7 @@ def index():
 def editor():
     output = None
     out = dict() 
+    errors = []
     if not session or not session["filename"]:
         session["filename"] = None
     if request.method == "POST":
@@ -47,35 +48,38 @@ def editor():
             f.save(filename)
             session["filename"] = filename
         elif request.values.get("form") == "2":
-            if request.values.get("detect"):
-                output = AudioTools.detectSong(session["filename"])
-                out["type"] = "detect"
-                output = dict()
-                output["title"] = AudioTools.detectSong(session["filename"]).get("track").get("title")
-                output["artist"] = AudioTools.detectSong(session["filename"]).get("track").get("subtitle")
-                output["image"] = AudioTools.detectSong(session["filename"]).get("track").get("images").get("coverart")
-            elif request.values.get("convert"):
-                print("convert")
-            elif request.values.get("keychange"):
-                out["type"] = "files"
-                output = AudioTools.keyChange(session["filename"], 'static/output/', 10)
-            elif request.values.get("amplify"):
-                print("****************AMPLIFY")
-                out["type"] = "files"
-                output = AudioTools.amplify(session["filename"], 'static/output/',4)
-            elif request.values.get("split"):
-                out["type"] = "files"
-                output = AudioTools.split(session["filename"], 'static/output/', 2)
-            elif request.values.get("waveform"):
-                out["type"] = "waveform"
-                output = AudioTools.displayWaveform(session["filename"])
-            elif request.values.get("cut"):
-                out["type"] = "files"
-                newaudio = request.values.get("newdata").split(',')
-                del newaudio[len(newaudio)-1]
-                output = [AudioTools.writeFrames(session["filename"], list(map(float,newaudio)), 'static/output/')]
+            if session["filename"] != None:
+                if request.values.get("detect"):
+                    output = AudioTools.detectSong(session["filename"])
+                    out["type"] = "detect"
+                    output = dict()
+                    output["title"] = AudioTools.detectSong(session["filename"]).get("track").get("title")
+                    output["artist"] = AudioTools.detectSong(session["filename"]).get("track").get("subtitle")
+                    output["image"] = AudioTools.detectSong(session["filename"]).get("track").get("images").get("coverart")
+                elif request.values.get("convert"):
+                    print("convert")
+                elif request.values.get("keychange"):
+                    out["type"] = "files"
+                    output = AudioTools.keyChange(session["filename"], 'static/output/', 10)
+                elif request.values.get("amplify"):
+                    print("****************AMPLIFY")
+                    out["type"] = "files"
+                    output = AudioTools.amplify(session["filename"], 'static/output/',4)
+                elif request.values.get("split"):
+                    out["type"] = "files"
+                    output = AudioTools.split(session["filename"], 'static/output/', 2)
+                elif request.values.get("waveform"):
+                    out["type"] = "waveform"
+                    output = AudioTools.displayWaveform(session["filename"])
+                elif request.values.get("cut"):
+                    out["type"] = "files"
+                    newaudio = request.values.get("newdata").split(',')
+                    del newaudio[len(newaudio)-1]
+                    output = [AudioTools.writeFrames(session["filename"], list(map(float,newaudio)), 'static/output/')]
+            else:
+                errors.append("You have not uploaded a file.")
     out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out)
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors)
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 

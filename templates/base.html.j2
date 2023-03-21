@@ -2,12 +2,10 @@
 <html lang="en">
     <head> 
         {% block head %}{% endblock %}
-        <link rel="stylesheet/less" type="text/css" href="static/style.less" />
-        <script src="https://cdn.jsdelivr.net/npm/less" ></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="static/dist/scss/style.css">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-        <script src="static/wavesurfer.js"></script>
+        <script src="static/js/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
     </head> 
     <body class="bg-dark text-light text-center"> 
@@ -26,6 +24,19 @@
                         <a class="nav-link" href="/editor">Editor <span class="sr-only">(current)</span></a>
                     </li>
                 </ul>
+                <!--
+                form-inline: 
+                my-2: sets top and bottom margin to $spacer*0.5
+                my-lg-0: 
+                -->
+                <div class="form-inline my-2 my-lg-0">
+                    <!--
+                    mx-auto: centers block content
+                    d-block: sets display to block
+                    rounded: sets 1px border radius
+                    -->
+                    <img class="rounded d-block mx-auto" height="50" src="static/images/default-pfp.png">
+                </div>
             </div>
             </nav>
         {% block body %}
