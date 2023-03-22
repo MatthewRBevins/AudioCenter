@@ -1,7 +1,7 @@
-@import 'bootstrap';
-$primary: 'red';
+$primary: rgb(0,0,255);
 
-html
+
+html 
 {
     height:100%; 
 }
@@ -120,9 +120,9 @@ form
     font-style:normal;
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size:15px;
-}
+} 
 
-.error
+.error 
 {
     color:red; 
 }
@@ -295,3 +295,6 @@ h3
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size:20px; 
 }
+
+
+@import 'scss/bootstrap'; 
