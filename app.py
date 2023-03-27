@@ -59,12 +59,14 @@ def editor():
                 elif request.values.get("convert"):
                     print("convert")
                 elif request.values.get("keychange"):
+                    steps = int(request.values.get("steps"))
                     out["type"] = "files"
-                    output = AudioTools.keyChange(session["filename"], 'static/output/', 10)
+                    output = AudioTools.keyChange(session["filename"], 'static/output/', steps)
                 elif request.values.get("amplify"):
+                    factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
                     out["type"] = "files"
-                    output = AudioTools.amplify(session["filename"], 'static/output/',4)
+                    output = AudioTools.amplify(session["filename"], 'static/output/', factor)
                 elif request.values.get("split"):
                     out["type"] = "files"
                     output = AudioTools.split(session["filename"], 'static/output/', 2)
@@ -76,6 +78,10 @@ def editor():
                     newaudio = request.values.get("newdata").split(',')
                     del newaudio[len(newaudio)-1]
                     output = [AudioTools.writeFrames(session["filename"], list(map(float,newaudio)), 'static/output/')]
+                elif request.values.get("speedchange"):
+                    factor = float(request.values.get("factorSpeed"))
+                    out["type"] = "files"
+                    output = AudioTools.changeSpeed(session["filename"], 'static/output/', factor)
             else:
                 errors.append("You have not uploaded a file.")
     out["output"] = output

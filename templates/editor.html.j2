@@ -38,15 +38,38 @@
                 {%endif%}
                 <div id="waveform"></div>
                 <form method="POST" enctype="multipart/form-data">
+                    <div id="hiddenKeyChange">
+                        <h5>Change Key</h5>
+                        <input type="range" name="steps" min="-10" max="10" step="1" oninput="document.getElementById('keyValue').innerHTML = this.value">
+                        <input class="btn" type="submit" name="keychange" value="Change">
+                        <br><h5>Steps: <output id="keyValue">0</output></h5>
+                    </div>
+
+                    <div id="hiddenSpeedChange">
+                        <h5>Change Speed Factor</h5>
+                        <input type="range" name="factorSpeed" min="0.1" max="4" step="0.1" oninput="document.getElementById('speedValue').innerHTML = this.value">
+                        <input class="btn" type="submit" name="speedchange" value="Change">
+                        <br><h5>Steps: <output id="speedValue">2</output></h5>
+                    </div>
+
+                    
+                    <div id="hiddenAmplify">
+                        <h5>Change Amplify Factor</h5>
+                        <input type="range" name="factorAmp" min="0.1" max="4" step="0.1" oninput="document.getElementById('ampValue').innerHTML = this.value">
+                        <input class="btn" type="submit" name="amplify" value="Change">
+                        <br><h5>Steps: <output id="ampValue">2</output></h5>
+                    </div>
+
                     <input type="hidden" name="form" value="2">
                     <input class="btn" type="submit" name="convert" value="Convert to WAV">
                     <input class="btn" type="submit" name="detect" value="Detect Song">
-                    <input class="btn" type="submit" name="keychange" value="Key Change">
-                    <input class="btn" type="submit" name="amplify" value="Amplify">
+                    <input class="btn" type="button" name="key" value="Key Change" onclick="showKey()">
+                    <input class="btn" type="button" name="amp" value="Amplify" onclick="showAmp()">
                     <input class="btn" type="submit" name="split" value="Split">
                     <input class="btn" type="submit" name="waveform" value="Display Waveform">
                     <input class="btn" type="hidden" name="newdata" id="elbruh">
                     <input class="btn" type="submit" name="cut" value="Cut">
+                    <input class="btn" type="button" name="speed" value="Speed Change" onclick="showSpeed()">
                 </form>
             </div>
         </div>
@@ -65,5 +88,42 @@
         ]
         });
         wavesurfer.load("{{fn}}")
+        $("#hiddenKeyChange").toggle();
+        $("#hiddenSpeedChange").toggle();
+        $("#hiddenAmplify").toggle();
+        
+        function showKey() {
+            $("#hiddenKeyChange").toggle();
+            if($("#hiddenSpeedChange").is(":visible")){
+                $("#hiddenSpeedChange").toggle();
+                }
+            if($("#hiddenAmplify").is(":visible")){
+                $("#hiddenAmplify").toggle();
+                }
+            }
+
+        function showSpeed() {
+            $("#hiddenSpeedChange").toggle();
+
+            if($("#hiddenKeyChange").is(":visible")){
+                $("#hiddenKeyChange").toggle();
+                }
+            if($("#hiddenAmplify").is(":visible")){
+                $("#hiddenAmplify").toggle();
+                }
+                
+            }     
+            
+        function showAmp() {
+            $("#hiddenAmplify").toggle();
+
+            if($("#hiddenKeyChange").is(":visible")){
+                $("#hiddenKeyChange").toggle();
+                }
+            if($("#hiddenSpeedChange").is(":visible")){
+                $("#hiddenSpeedChange").toggle();
+                }    
+                
+            }
     </script>
 {% endblock %}

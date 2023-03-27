@@ -81,3 +81,16 @@ def split(file, output, stems):
     actualname = file.split("/")[len(file.split("/"))-1].split(".wav")[0]
     print("*************  " + actualname)
     return [output + actualname + '/accompaniment.wav', output + actualname + '/vocals.wav']
+
+
+def changeSpeed(file, output, factor):
+    try:
+        os.makedirs(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+    except:
+        pass
+    song, fs = librosa.load(file)
+
+    changed = librosa.effects.time_stretch(song, factor)
+
+    wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
+    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
