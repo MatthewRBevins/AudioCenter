@@ -103,6 +103,10 @@ def login():
         else:
             return render_template("login.html.j2", invalid=True)
 
+@app.route('/profile')
+def profile():
+    return render_template('profile.html.j2')
+
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
 def signup(): 
