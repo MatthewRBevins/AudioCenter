@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import subprocess
+from scipy.io import wavfile
 
 def mp3towav(file, newfile):
     subprocess.call(['ffmpeg', '-i', file,newfile])
