@@ -29,17 +29,35 @@ def executeQuery(query, queryVars):
     #Fetch data from query
     return cursor.fetchall()
 
+class userData:
+    def __init__(self, username):
+        self.username = username
+    def createDict(self):
+        d = dict()
+        d["username"] = self.username
+        return d
+
+def verifySessions():
+    try:
+        session["userData"]
+    except KeyError:
+        session["userData"] = userData("").createDict()
+    try:
+        session["filename"]
+    except KeyError:
+        session["filename"] = None
+
 @app.route('/')
 def index():
-    return render_template('index.html.j2', time=time)
+    verifySessions()
+    return render_template('index.html.j2', time=time, userData=session["userData"])
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
+    verifySessions()
     output = None
     out = dict() 
     errors = []
-    if not session or not session["filename"]:
-        session["filename"] = None
     if request.method == "POST":
         if request.values.get("form") == "1":
             f = request.files["file"]
@@ -85,33 +103,44 @@ def editor():
             else:
                 errors.append("You have not uploaded a file.")
     out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors)
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"])
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 
 def login(): 
+    verifySessions()
     if request.method=="GET": 
-        return render_template("login.html.j2")
+        return render_template("login.html.j2", userData=session["userData"])
     elif request.method=="POST": 
         userput=request.values.get("username") 
         passput=request.values.get("paswd") 
         passwdsha=hashlib.sha256(passput.encode('utf-8')).hexdigest()
         data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s AND password=%s", (userput, passwdsha))
         if len(data) > 0: 
-            session["username"]=userput
+            session["userData"] = userData(userput).createDict()
             return redirect(url_for("index"))
         else:
-            return render_template("login.html.j2", invalid=True)
+            return render_template("login.html.j2", invalid=True, userData=session["userData"])
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    return render_template('profile.html.j2')
+    verifySessions()
+    if request.method == "POST":
+        f = request.files["file"]
+        try:
+            os.mkdir('static/images/pfps/' + session["userData"]["username"])
+        except:
+            pass
+        filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
+        f.save(filename)
+    return render_template('profile.html.j2', userData=session["userData"])
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
 def signup(): 
+    verifySessions()
     if request.method=="GET": 
-        return render_template("signup.html.j2") 
+        return render_template("signup.html.j2", userData=session["userData"]) 
     else: 
         #I am not doing server-side validation for the username and password because the request.values.get always returns a string, which can be hashed
         #If the user really wants to put their password as a color, that's fine
@@ -125,4 +154,4 @@ def signup():
             return redirect(url_for("login"))
         else:
             data = executeQuery("SELECT * FROM audiocenter_users", ())
-            return render_template("signup.html.j2", invalid=True)
+            return render_template("signup.html.j2", invalid=True, userData=session["userData"])
