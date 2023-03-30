@@ -2,7 +2,7 @@
 <html lang="en">
     <head> 
         {% block head %}{% endblock %}
-        <link rel="stylesheet" href="static/css/style.css">
+        <link rel="stylesheet" href="{{url_for('index')}}static/css/style.css">
         <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
         <script src="static/js/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
@@ -10,24 +10,24 @@
     <body class="bg-dark text-light text-center"> 
         <nav class="navbar navbar-expand-lg navbar-light bg-info">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">AudioCenter</a>
+                <a class="navbar-brand" href="{{url_for('index')}}">AudioCenter</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                            <a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="editor">Editor</a>
+                            <a class="nav-link active" href="{{url_for('editor')}}">Editor</a>
                         </li>
                     </ul>
                     <form class="d-flex">
                         {%if userData.username != '' and userData is defined%}
-                        <a href="profile"><img class="rounded mx-auto" height="50" src="static/images/pfps/{{userData.username}}/pfp.png"></a>
+                        <a href="{{url_for('profile')}}"><img class="rounded mx-auto" height="50" src="static/images/pfps/{{userData.username}}/pfp.png"></a>
                         {%else%}
-                        <a href="login"><img class="rounded mx-auto" height="50" src="static/images/pfps/default-pfp.png"></a>
+                        <a href="{{url_for('login')}}"><img class="rounded mx-auto" height="50" src="static/images/pfps/default-pfp.png"></a>
                         {%endif%}
                     </form>
                 </div>
