@@ -5,12 +5,17 @@
 {% endblock %}
 
 {% block body %}
+<div class="bg2">
     <br>
     <div>
         <h1>Welcome, {{userData.username}}</h1>
+        <h2>User Settings</h2>
         <form method="POST" enctype="multipart/form-data">
-            <p class="text-light">Change PFP: <input class="btn" type="file" name="file"></p>
-            <input type="submit" name="submit" value="Submit">
+            <p class="text-light">Change PFP: <input class="btn" type="file" name="file"><input type="submit" name="submit" value="Change PFP"></p>
+            <input type="submit" name="submit" value="Sign Out">
         </form>
+        <br>
+        <h1>Your Audio:</h1>
     </div>
+</div>
 {% endblock %}

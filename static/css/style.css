@@ -11772,6 +11772,10 @@ form {
   margin-left: -37%;
 }
 
+.bgprofile {
+  background-image: url("/static/images/LoginBackground.png");
+}
+
 .bg2 {
   background-image: url("/static/images/LoginBackground.png");
   background-position: center;
@@ -11781,9 +11785,6 @@ form {
   position: relative;
   width: 173%;
   margin-left: -37%;
-}
-
-.bg2spinoff {
   height: 100%;
 }
 

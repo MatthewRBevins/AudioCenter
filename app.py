@@ -30,18 +30,22 @@ def executeQuery(query, queryVars):
     return cursor.fetchall()
 
 class userData:
-    def __init__(self, username):
+    def __init__(self, username, loggedIn):
         self.username = username
+        self.loggedIn = loggedIn
     def createDict(self):
         d = dict()
         d["username"] = self.username
+        d["loggedIn"] = self.loggedIn
         return d
 
 def verifySessions():
+    #Update this when adding new session vars
+    #session["userData"]["loggedIn"] = True
     try:
         session["userData"]
     except KeyError:
-        session["userData"] = userData("").createDict()
+        session["userData"] = userData("", False).createDict()
     try:
         session["filename"]
     except KeyError:
@@ -109,6 +113,8 @@ def editor():
 @app.route('/login', methods=['GET', 'POST']) 
 def login(): 
     verifySessions()
+    if session["userData"]["loggedIn"]:
+        return(redirect(url_for("profile")))
     if request.method=="GET": 
         return render_template("login.html.j2", userData=session["userData"])
     elif request.method=="POST": 
@@ -117,7 +123,7 @@ def login():
         passwdsha=hashlib.sha256(passput.encode('utf-8')).hexdigest()
         data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s AND password=%s", (userput, passwdsha))
         if len(data) > 0: 
-            session["userData"] = userData(userput).createDict()
+            session["userData"] = userData(userput, True).createDict()
             return redirect(url_for("index"))
         else:
             return render_template("login.html.j2", invalid=True, userData=session["userData"])
@@ -125,14 +131,20 @@ def login():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     verifySessions()
+    if not session["userData"]["loggedIn"]:
+        return(redirect(url_for("login")))
     if request.method == "POST":
-        f = request.files["file"]
-        try:
-            os.mkdir('static/images/pfps/' + session["userData"]["username"])
-        except:
-            pass
-        filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
-        f.save(filename)
+        if request.values.get("submit") == "Change PFP":
+            f = request.files["file"]
+            try:
+                os.mkdir('static/images/pfps/' + session["userData"]["username"])
+            except:
+                pass
+            filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
+            f.save(filename)
+        elif request.values.get("submit") == "Sign Out":
+            session["userData"] = userData("", False).createDict()
+            return redirect(url_for("login"))
     return render_template('profile.html.j2', userData=session["userData"])
 
 #Signup
