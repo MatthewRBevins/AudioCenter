@@ -74,10 +74,6 @@ def editor():
                 if request.values.get("detect"):
                     output = AudioTools.detectSong(session["filename"])
                     out["type"] = "detect"
-                    output = dict()
-                    output["title"] = AudioTools.detectSong(session["filename"]).get("track").get("title")
-                    output["artist"] = AudioTools.detectSong(session["filename"]).get("track").get("subtitle")
-                    output["image"] = AudioTools.detectSong(session["filename"]).get("track").get("images").get("coverart")
                 elif request.values.get("convert"):
                     print("convert")
                 elif request.values.get("keychange"):

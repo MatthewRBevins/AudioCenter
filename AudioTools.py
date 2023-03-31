@@ -21,7 +21,11 @@ async def songDetectAsync(file):
     start = time.time()
     out = await shazam.recognize_song(file)
     end = time.time()
-    return out
+    output = dict()
+    output["title"] = out.get("track").get("title")
+    output["artist"] = out.get("track").get("subtitle")
+    output["image"] = out.get("track").get("images").get("coverart")
+    return output
     
 def detectSong(file):
     loop = asyncio.new_event_loop()
