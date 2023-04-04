@@ -40,6 +40,7 @@ class userData:
         return d
 
 def verifySessions():
+    print("VERIFY SESSIONS")
     #Update this when adding new session vars
     #session["userData"]["loggedIn"] = True
     try:
@@ -50,10 +51,11 @@ def verifySessions():
         session["filename"]
     except KeyError:
         session["filename"] = None
+    print("DONE")
 
 @app.route('/')
 def index():
-    verifySessions()
+    #verifySessions()
     return render_template('index.html.j2', time=time, userData=session["userData"])
 
 @app.route('/editor', methods=["GET", "POST"])
