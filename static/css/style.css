@@ -11938,33 +11938,6 @@ h3, .h3 {
   left: 0;
 }
 
-/* Modified from Mozilla CSS Docs */
-.fade {
-  padding: 0px;
-  height: 60px;
-  background-color: #1b1b1b;
-  color: #fff;
-  transition: background-color 1s;
-  width: 100%;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  position: fixed;
-  margin: auto;
-}
-
-.fade:hover {
-  z-index: 1;
-  background-color: #360069;
-}
-
-.fade:focus,
-.fade:active {
-  z-index: 1;
-  background-color: black;
-  transition: none;
-}
-
 .fadein {
   animation: fadeIn 1s;
 }
