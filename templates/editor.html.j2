@@ -27,6 +27,8 @@
                     <h3>{{out.output.title}}</h3>
                     <h4>{{out.output.artist}}</h4>
                     <img src="{{out.output.image}}">
+                    <br><br><br>
+                    <h5>{{out.output.lyrics}}</h5>
                 {%elif out.type == "files"%}
                 {%for i in out.output%}
                     {%set ffn = i.split('/')%}

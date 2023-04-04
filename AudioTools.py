@@ -25,6 +25,7 @@ async def songDetectAsync(file):
     output["title"] = out.get("track").get("title")
     output["artist"] = out.get("track").get("subtitle")
     output["image"] = out.get("track").get("images").get("coverart")
+    output["lyrics"] = out.get("track").get("sections")[1].get("text")
     return output
 
 def trimSong(originalWavPath, newWavPath):
