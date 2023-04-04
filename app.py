@@ -65,15 +65,22 @@ def editor():
     if request.method == "POST":
         if request.values.get("form") == "1":
             f = request.files["file"]
-            t = str(int(time.time()))
+            t = str(int(time.time()))   
             filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-            f.save(filename)
+            f.save(filename) 
             session["filename"] = filename
         elif request.values.get("form") == "2":
             if session["filename"] != None:
                 if request.values.get("detect"):
+                    originalFilename = session["filename"] 
+                    t = str(int(time.time())) 
+                    trimmedFilename = 'static/audio/trimmed/' + t + '.wav'
+                    proxy = open(trimmedFilename, "w")
+                    AudioTools.trimSong(session["filename"], trimmedFilename)
+                    session["filename"] = trimmedFilename
                     output = AudioTools.detectSong(session["filename"])
                     out["type"] = "detect"
+                    session["filename"] = originalFilename
                 elif request.values.get("convert"):
                     print("convert")
                 elif request.values.get("keychange"):

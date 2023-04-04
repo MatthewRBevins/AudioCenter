@@ -26,7 +26,14 @@ async def songDetectAsync(file):
     output["artist"] = out.get("track").get("subtitle")
     output["image"] = out.get("track").get("images").get("coverart")
     return output
-    
+
+def trimSong(originalWavPath, newWavPath):
+    #Assumes file is .wav 
+    sampleRate, waveData = wavfile.read(originalWavPath)
+    endSample = int(20 * sampleRate )
+    trim = wavfile.write(newWavPath, sampleRate, waveData[0:endSample])
+    return trim
+
 def detectSong(file):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
