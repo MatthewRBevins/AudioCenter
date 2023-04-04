@@ -11774,6 +11774,18 @@ form {
 
 .bgprofile {
   background-image: url("/static/images/LoginBackground.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  position: relative;
+  width: 173%;
+  margin-left: -37%;
+  height: 100%;
+}
+
+a {
+  text-decoration: none;
 }
 
 .bg2 {
@@ -11983,4 +11995,29 @@ h3, .h3 {
 #ab {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 20px;
+}
+
+.ibr {
+  margin-left: 20px;
+  margin-right: 5px;
+}
+
+.spanbr {
+  margin-left: 10px;
+}
+
+.text::-moz-selection {
+  background-color: transparent;
+}
+
+.text::selection {
+  background-color: transparent;
+}
+
+.form {
+  display: none;
+}
+
+.iho:hover {
+  cursor: pointer;
 }/*# sourceMappingURL=style.css.map */

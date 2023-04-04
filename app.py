@@ -148,7 +148,7 @@ def profile():
         elif request.values.get("submit") == "Sign Out":
             session["userData"] = userData("", False).createDict()
             return redirect(url_for("login"))
-    return render_template('profile.html.j2', userData=session["userData"])
+    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"])
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
@@ -170,3 +170,12 @@ def signup():
         else:
             data = executeQuery("SELECT * FROM audiocenter_users", ())
             return render_template("signup.html.j2", invalid=True, userData=session["userData"])
+
+@app.route('/@<userToShow>', methods = ["GET"])
+def userShow(userToShow):
+    data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (userToShow,))
+    print("DATA:")
+    if len(data) == 0:
+        return render_template('index.html.j2', time=time, userData=session["userData"], errors=['User not found.'])
+    userToShowData = userData(userToShow, False).createDict()
+    return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)

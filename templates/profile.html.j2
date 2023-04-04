@@ -8,14 +8,36 @@
 <div class="bg2">
     <br>
     <div>
-        <h1>Welcome, {{userData.username}}</h1>
-        <h2>User Settings</h2>
-        <form method="POST" enctype="multipart/form-data">
-            <p class="text-light">Change PFP: <input class="btn" type="file" name="file"><input type="submit" name="submit" value="Change PFP"></p>
-            <input type="submit" name="submit" value="Sign Out">
-        </form>
-        <br>
-        <h1>Your Audio:</h1>
+        <label for="file-input">
+            <img class="rounded mx-auto" height="200" src="static/images/pfps/{{userToShowData.username}}/pfp.png">
+        </label>
+        <input id="file-input" type="file" style="display:none"/><br><br>
+        <div class="textedit" id="usernamecontainer">
+            <h1 class="text" id="username">@{{userToShowData.username}}</h1>
+            <form class="form">
+                <input class="form-control editor" name="username"></textarea>
+                <button class="btn btn-primary">Save</button>
+            </form>
+        </div>
+        <div class="textedit" id="biocontainer">
+            <p class="text" id="bio">Hello, I'm Matthew.</p>
+            <form class="form">
+                <textarea class="form-control editor" name="bio"></textarea>
+                <button class="btn btn-primary">Save</button>
+            </form>
+        </div>
+        <h5><i class="fa-solid fa-location-dot ibr"></i>United States<i class="fa-solid fa-link ibr"></i><a target="_blank" href="https://matthewrbevins.com">matthewrbevins.com</a><i class="fa-solid fa-calendar ibr"></i>March 2023<i class="fa-solid fa-pen-to-square ibr iho" onclick="alert('open modal')"></i></h5>
+        <h5 class="text-light"><span class="spanbr">1K Followers<i class="text-warning fa-solid fa-medal"></i></span><span class="spanbr">1 Following</span></h5>
+        <h1>{{userToShowData.username}}'s Audio:</h1>
     </div>
 </div>
+<script>
+    $('.textedit .text').on('dblclick', e => {
+        e.preventDefault()
+        $(`#${e.target.id}`).hide()
+        $(`#${e.target.id}container .editor`).html($(`#${e.target.id}`).html().replace("@",""))
+        $(`#${e.target.id}container .editor`).val($(`#${e.target.id}`).html().replace("@",""))
+        $(`#${e.target.id}container .form`).show()
+    })
+</script>
 {% endblock %}
