@@ -300,3 +300,33 @@ h3
 .iho:hover {
     cursor: pointer;
 }
+
+.progressbar {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    margin: 30px auto 0;
+    height: 15px;
+    background: #274545;
+    overflow: hidden;
+  }
+  
+  span.progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: #326666;
+    transition: all .3s;
+  }  
+
+.modal-header {
+    color: black;
+    background-color: white;   // Code of the exact color you want
+}
+
+.modal-body {
+    color: black;
+    background-color: white;   // Code of the exact color you want
+}
