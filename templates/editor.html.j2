@@ -10,7 +10,6 @@
             }
         </style>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <script src="static/progress.js"></script>
         <script>
             $(document).ready(function(){
                 $("#hide").click(function(){
@@ -28,10 +27,9 @@
 
 {% block body %}        
     <div class="">
-        <br><br><br>
         <div id="bgtext">
             <div class="fadein">
-                <h1>AudioCenter Editor</h1>
+                <!--<h1>AudioCenter Editor</h1>
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="form" value="1">
                     <input class="btn" type="file" name="file">
@@ -49,7 +47,67 @@
                     {%set ffn = i.split('/')%}
                     <h3>Download: <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a></h3>
                 {%endfor%}
-                {%endif%}
+                {%endif%}-->
+                <nav class="navbar navbar-expand-lg navbar-light bg-warning" id="editorRibbon">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    File
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#">Open</a>
+                                    <a class="dropdown-item" href="#">Save</a>
+                                    <a class="dropdown-item" href="#">New</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Edit
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#">Delete</a>
+                                    <a class="dropdown-item" href="#">Copy</a>
+                                    <a class="dropdown-item" href="#">Paste</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Select
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#">Select All</a>
+                                    <a class="dropdown-item" href="#">Select None</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Effect
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#">Key Change</a>
+                                    <a class="dropdown-item" href="#">Amplify</a>
+                                    <a class="dropdown-item" href="#">Split Tracks</a>
+                                    <a class="dropdown-item" href="#">Speed Change</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    View
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#">Zoom In</a>
+                                    <a class="dropdown-item" href="#">Zoom Out</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
                 <div id="waveform"></div>
                 <form method="POST" enctype="multipart/form-data">
                     <div id="hiddenKeyChange">

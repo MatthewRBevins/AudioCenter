@@ -55,8 +55,37 @@ def verifySessions():
 
 @app.route('/')
 def index():
-    #verifySessions()
-    return render_template('index.html.j2', time=time, userData=session["userData"])
+    verifySessions()
+    return render_template('index.html.j2', userData=session["userData"])
+
+@app.route('/detect', methods=["GET","POST"])
+def detect():
+    verifySessions()
+    output = None
+    out = dict() 
+    if request.method == "POST":
+        print("HI")
+        f = request.files["file"]
+        t = str(int(time.time()))   
+        filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+        f.save(filename) 
+        session["filename"] = filename
+        originalFilename = session["filename"] 
+        t = str(int(time.time())) 
+        trimmedFilename = 'static/audio/trimmed/' + t + '.wav'
+        proxy = open(trimmedFilename, "w")
+        AudioTools.trimSong(session["filename"], trimmedFilename)
+        session["filename"] = trimmedFilename
+        output = AudioTools.detectSong(session["filename"])
+        out["type"] = "detect"
+        session["filename"] = originalFilename
+        out["output"] = output
+    return render_template('detect.html.j2', fn=session["filename"], userData=session["userData"], out=out)
+
+@app.route('/convert', methods=["GET","POST"])
+def convert():
+    verifySessions()
+    return render_template('convert.html.j2', fn=session["filename"], userData=session["userData"])
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
@@ -73,19 +102,7 @@ def editor():
             session["filename"] = filename
         elif request.values.get("form") == "2":
             if session["filename"] != None:
-                if request.values.get("detect"):
-                    originalFilename = session["filename"] 
-                    t = str(int(time.time())) 
-                    trimmedFilename = 'static/audio/trimmed/' + t + '.wav'
-                    proxy = open(trimmedFilename, "w")
-                    AudioTools.trimSong(session["filename"], trimmedFilename)
-                    session["filename"] = trimmedFilename
-                    output = AudioTools.detectSong(session["filename"])
-                    out["type"] = "detect"
-                    session["filename"] = originalFilename
-                elif request.values.get("convert"):
-                    print("convert")
-                elif request.values.get("keychange"):
+                if request.values.get("keychange"):
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     output = AudioTools.keyChange(session["filename"], 'static/output/', steps)
@@ -178,6 +195,6 @@ def userShow(userToShow):
     data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (userToShow,))
     print("DATA:")
     if len(data) == 0:
-        return render_template('index.html.j2', time=time, userData=session["userData"], errors=['User not found.'])
+        return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
     return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)

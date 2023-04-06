@@ -1,0 +1,87 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+        <title>Audio Center</title>
+{% endblock %}
+
+{% block body %}        
+    <form method="POST" id="detectForm" enctype="multipart/form-data">
+        <input style="display:none" type="file" id="fileInput" name="file" />
+    </form>
+    <br><br><br>
+    <button id="clickme" class="show show2 btn btn-primary" onclick="alertModal(50); this.onclick=null; showBar(); hideBar(50);" data-bs-toggle="modal" data-bs-target="#exampleModal" style="display:none">Split</button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <div id="bar" class="counter" style="">0</div>
+                            <div id="bar2" class="progressbar" style="">
+                                <span class="progress"></span>
+                            </div>
+                            <div id="text" style="display:none">
+                                <p>All done!</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+        {%if out.type == "detect"%}
+            <h3>{{out.output.title}}</h3>
+            <h4>{{out.output.artist}}</h4>
+            <img src="{{out.output.image}}">
+            <br><br><br>
+            <h5><i>Lyrics</i></h5>
+            {%for i in out.output.lyrics%}
+            <p>{{i}}</p>
+            {%endfor%}
+        {%else%}
+        <div id="bgtext">
+            <div class="fadein">
+                <h1>Detect a Song</h1>
+                <h3><i>Drag and drop a WAV file here</i></h3>
+            </div>
+        </div>
+        {%endif%}
+    </div>
+    <script>
+        document.getElementsByTagName("body")[0].ondragover = document.getElementsByTagName("body")[0].ondragenter = function(evt) {
+            document.body.style.border = "5px dashed white"
+            evt.preventDefault();
+        };
+
+        document.getElementsByTagName("body")[0].ondragleave = document.getElementsByTagName("body")[0].ondragleave = function(evt) {
+            document.body.style.border = "none"
+            evt.preventDefault();
+        };
+
+        document.getElementsByTagName("body")[0].ondrop = function(evt) {
+            $('#clickme').click()
+            document.body.style.border = "none"
+            evt.preventDefault()
+            // pretty simple -- but not for IE :(
+            fileInput.files = evt.dataTransfer.files;
+
+            // If you want to use some of the dropped files
+            const dT = new DataTransfer();
+            dT.items.add(evt.dataTransfer.files[0]);
+            fileInput.files = dT.files;
+            $('#detectForm').submit()
+            /*var fd = new FormData()
+            fd.append("file", evt.dataTransfer.files[0]);
+            $.ajax({
+                type: "POST",
+                url: "/detect",
+                cache: false,
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function(result) {
+                    alert(result)
+                }
+            })*/
+        };
+    </script>
+{% endblock %}

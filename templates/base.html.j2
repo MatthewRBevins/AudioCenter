@@ -3,9 +3,9 @@
     <head> 
         {% block head %}{% endblock %}
         <link rel="stylesheet" href="{{url_for('index')}}static/css/style.css">
-        <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
         <script src="static/js/wavesurfer.js"></script>
-        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.playhead.js"></script>
+        <script src="static/js/playhead.js"></script>
+        <script src="static/js/jquery-3.6.4.min.js"></script>
         <script src="https://kit.fontawesome.com/c95fa3aabc.js" crossorigin="anonymous"></script>
     </head> 
     <body class="bg-dark text-light text-center"> 
@@ -21,7 +21,13 @@
                             <a class="nav-link active" aria-current="page" href="{{url_for('index')}}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="{{url_for('editor')}}">Editor</a>
+                            <a class="nav-link active" href="{{url_for('editor')}}">Edit</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{url_for('detect')}}">Detect</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{url_for('convert')}}">Convert</a>
                         </li>
                     </ul>
                     <form class="d-flex">
@@ -42,6 +48,6 @@
         {%endfor%}
         {% endblock %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="static/js/progress.js"></script>
     </body> 
 </html>

@@ -1,0 +1,48 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+        <title>Audio Center</title>
+{% endblock %}
+
+{% block body %}        
+        <br><br><br>
+        <div id="bgtext">
+            <form method="POST" id="detectForm">
+                <input style="display:none" type="file" id="fileInput" />
+                <h3 class="convertOptions">Detected Type: WAV</h3>
+                <select class="convertOptions">
+                    <option>Convert to MP3</option>
+                </select>
+                <input class="convertOptions" type="submit" name="submit" value="Go!">
+            </form>
+            <div class="fadein">
+                <h1>Convert Audio Files</h1>
+                <h3><i>Drag and drop an audio file here</i></h3>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementsByTagName("body")[0].ondragover = document.getElementsByTagName("body")[0].ondragenter = function(evt) {
+            document.body.style.border = "5px dashed white"
+            evt.preventDefault();
+        };
+
+        document.getElementsByTagName("body")[0].ondragleave = document.getElementsByTagName("body")[0].ondragleave = function(evt) {
+            document.body.style.border = "none"
+            evt.preventDefault();
+        };
+
+        document.getElementsByTagName("body")[0].ondrop = function(evt) {
+            document.body.style.border = "none"
+            evt.preventDefault()
+            // pretty simple -- but not for IE :(
+            fileInput.files = evt.dataTransfer.files;
+
+            // If you want to use some of the dropped files
+            const dT = new DataTransfer();
+            dT.items.add(evt.dataTransfer.files[0]);
+            fileInput.files = dT.files;
+            $('.convertOptions').show()
+        };
+    </script>
+{% endblock %}
