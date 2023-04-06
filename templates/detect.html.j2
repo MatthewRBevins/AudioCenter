@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     </div>
-        {%if out.type == "detect"%}
+        {%if out.type == "detect" and out.output != none%}
             <h3>{{out.output.title}}</h3>
             <h4>{{out.output.artist}}</h4>
             <img src="{{out.output.image}}">

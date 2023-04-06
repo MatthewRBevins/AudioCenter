@@ -974,6 +974,17 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 var progressing = false;
 var left = 0;
+var widthh = 0;
+window.onload = () => {
+  $('#waveform').on('mousedown', (e) => {
+    left = e.screenX;
+    progressing = true;
+  })
+  $('#waveform').on('mouseup', (e) => {
+    widthh = e.screenX - left;
+    progressing = false;
+  })
+}
 /**
  * MultiCanvas renderer for wavesurfer. Is currently the default and sole
  * builtin renderer.
@@ -1656,47 +1667,11 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
   }, {
     key: "updateProgress",
     value: function updateProgress(position) {
-        console.log(1280);
-        console.log(backend.buffer);
-        //console.log(backend.buffer.copyToChannel());
-        this.progressCtx = null;
-        console.log(progressing)
-        if (progressing) {
-            console.log("******" + 1280)
-            this.style(this.progressWave, {
-                width: (position - left) + 'px'
-            });
-            let arrr = backend.buffer.getChannelData(1);
-            let arr = [];
-            for (let i of arrr) {
-              arr.push(i);
-            }
-            arr.push('lmao')
-            console.log(arr.length + " COMPARE " + 1280)
-            let ratio = arr.length/1280;
-            console.log("********")
-            console.log(0);
-            console.log(Math.floor(left*ratio));
-            console.log(left+position);
-            console.log(Math.floor((left+position)*ratio))
-            console.log(arr.length-1);
-            let lll = arr.slice(0,Math.floor(left*ratio))//.concat(arr.slice(Math.floor((left+position)*ratio), arr.length-1))
-            let right = arr.slice(Math.floor((left+position)*ratio), arr.length-1)
-            arr = lll.concat(right);
-            console.log(left + " TO " + (left+position))
-            console.log("NEW LEN: " + arr.length)
-            currentBuffer = arr;
-            document.getElementById("elbruh").value = arr;
-            progressing = false;
-        }
-        else {
-            left = position;
-            this.style(this.progressWave, {
-                left: position + 'px',
-                width: '0px'
-            });
-            progressing = true;
-        }
+        //MATTHEW
+        this.style(this.progressWave, {
+          left: left + 'px',
+          width: widthh + 'px'
+        });
     }
   }]);
   return MultiCanvas;

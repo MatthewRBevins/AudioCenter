@@ -56,52 +56,57 @@
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     File
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Open</a>
-                                    <a class="dropdown-item" href="#">Save</a>
-                                    <a class="dropdown-item" href="#">New</a>
+                                    <label for="file-open" class="dropdown-item">Open</label>
+                                    <form method="POST" id="file-open-form" style="display: none" enctype="multipart/form-data">
+                                        <input type="hidden" name="form" value="1">
+                                        <input type="file" id="file-open" name="file-open" style="display:none">
+                                    </form>
+                                    <a class="dropdown-item" href="{{out['output']}}" download>Save</a>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Edit
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Delete</a>
-                                    <a class="dropdown-item" href="#">Copy</a>
-                                    <a class="dropdown-item" href="#">Paste</a>
+                                    <a class="dropdown-item">Delete</a>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Select
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Select All</a>
-                                    <a class="dropdown-item" href="#">Select None</a>
+                                    <a class="dropdown-item" onclick="fillProgress(100)">Select All</a>
+                                    <a class="dropdown-item" onclick="fillProgress(0)">Select None</a>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Effect
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Key Change</a>
-                                    <a class="dropdown-item" href="#">Amplify</a>
-                                    <a class="dropdown-item" href="#">Split Tracks</a>
-                                    <a class="dropdown-item" href="#">Speed Change</a>
+                                    <label class="dropdown-item" onclick="showKey()" data-bs-toggle="modal" data-bs-target="#keyModal">Key Change</label>
+                                    <label class="dropdown-item" onclick="showAmp()" data-bs-toggle="modal" data-bs-target="#ampModal">Amplify</label>
+                                    <label for="split-tracks" class="dropdown-item">Split Tracks</label>
+                                    <label class="dropdown-item" onclick="showSpeed()" data-bs-toggle="modal" data-bs-target="#speedModal">Speed Change</label>
+                                    <form method="POST" style="display:none">
+                                        <input type="hidden" name="form" value="2">
+                                        <input type="submit" name="split-tracks" id="split-tracks">
+                                    </form>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     View
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Zoom In</a>
-                                    <a class="dropdown-item" href="#">Zoom Out</a>
+                                    <a class="dropdown-item" onclick="zoom(false)">Zoom In</a>
+                                    <a class="dropdown-item" onclick="zoom(true)">Zoom Out</a>
                                     </div>
                                 </li>
                             </ul>
@@ -110,28 +115,63 @@
                 </nav>
                 <div id="waveform"></div>
                 <form method="POST" enctype="multipart/form-data">
-                    <div id="hiddenKeyChange">
-                        <h5>Change Key</h5>
-                        <input type="range" name="steps" min="-10" max="10" step="1" oninput="document.getElementById('keyValue').innerHTML = this.value">
-                        <input class="btn btn-primary" type="submit" name="keychange" value="Change">
-                        <br><h5>Steps: <output id="keyValue">0</output></h5>
+                <input type="hidden" name="form" value="2">
+                <div class="modal fade" id="keyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <div id="hiddenKeyChange">
+                                <h5>Change Key</h5>
+                                <input type="range" name="steps" min="-10" max="10" step="1" oninput="document.getElementById('keyValue').innerHTML = this.value">
+                                <input class="btn btn-primary" type="submit" name="key-change" value="Change">
+                                <br><h5>Half-Steps: <output id="keyValue">0</output></h5>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
                     </div>
 
-                    <div id="hiddenSpeedChange">
-                        <h5>Change Speed Factor</h5>
-                        <input type="range" name="factorSpeed" min="0.1" max="4" step="0.1" oninput="document.getElementById('speedValue').innerHTML = this.value">
-                        <input class="btn btn-primary" type="submit" name="speedchange" value="Change">
-                        <br><h5>Steps: <output id="speedValue">2</output></h5>
+
+                    <div class="modal fade" id="speedModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <div id="hiddenSpeedChange">
+                                <h5>Change Speed Factor</h5>
+                                <input type="range" name="factorSpeed" min="0.1" max="4" step="0.1" oninput="document.getElementById('speedValue').innerHTML = this.value">
+                                <input class="btn btn-primary" type="submit" name="speed-change" value="Change">
+                                <br><h5>Steps: <output id="speedValue">2</output></h5>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
                     </div>
 
-                    
-                    <div id="hiddenAmplify">
-                        <h5>Change Amplify Factor</h5>
-                        <input type="range" name="factorAmp" min="0.1" max="4" step="0.1" oninput="document.getElementById('ampValue').innerHTML = this.value">
-                        <input class="btn btn-primary" type="submit" name="amplify" value="Change">
-                        <br><h5>Steps: <output id="ampValue">2</output></h5>
-                    </div>
 
+                    <div class="modal fade" id="ampModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <div id="hiddenAmplify">
+                                <h5>Change Amplify Factor</h5>
+                                <input type="range" name="factorAmp" min="0.1" max="4" step="0.1" oninput="document.getElementById('ampValue').innerHTML = this.value">
+                                <input class="btn btn-primary" type="submit" name="amplify" value="Change">
+                                <br><h5>Steps: <output id="ampValue">2</output></h5>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                    <!--
                     <input type="hidden" name="form" value="2">
                     <input class="btn btn-primary" type="submit" name="convert" value="Convert to WAV">
                     <input class="btn btn-primary" type="submit" name="detect" value="Detect Song">
@@ -160,11 +200,16 @@
                     <input class="btn btn-primary" type="hidden" name="newdata" id="elbruh">
                     <input class="btn btn-primary" type="submit" name="cut" value="Cut">
                     <input class="btn btn-primary" type="button" name="speed" value="Speed Change" onclick="showSpeed()">
+                    -->
                 </form>
             </div>
         </div>
     </div>
     <script>
+        var zoomLevel = 100
+        $('#file-open').on('change', () => {
+            $('#file-open-form').submit()
+        })
         var wavesurfer = WaveSurfer.create({
             container: "#waveform",
             waveColor: "violet",
@@ -181,6 +226,21 @@
         $("#hiddenKeyChange").toggle();
         $("#hiddenSpeedChange").toggle();
         $("#hiddenAmplify").toggle();
+
+        function fillProgress(percent) {
+            $('#progress').css('left', '0px');
+            $('#progress').css('width', `${percent}%`);
+        }
+
+        function zoom(out) {
+            if (out) {
+                zoomLevel -= 50
+            }
+            else {
+                zoomLevel += 50
+            }
+            wavesurfer.zoom(zoomLevel)
+        }
         
         function showKey() {
             $("#hiddenKeyChange").toggle();

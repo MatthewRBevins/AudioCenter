@@ -22,11 +22,14 @@ async def songDetectAsync(file):
     out = await shazam.recognize_song(file)
     end = time.time()
     output = dict()
-    output["title"] = out.get("track").get("title")
-    output["artist"] = out.get("track").get("subtitle")
-    output["image"] = out.get("track").get("images").get("coverart")
-    output["lyrics"] = out.get("track").get("sections")[1].get("text")
-    return output
+    if len(out['matches']) == 0:
+        return None
+    else:
+        output["title"] = out.get("track").get("title")
+        output["artist"] = out.get("track").get("subtitle")
+        output["image"] = out.get("track").get("images").get("coverart")
+        output["lyrics"] = out.get("track").get("sections")[1].get("text")
+        return output
 
 def trimSong(originalWavPath, newWavPath):
     #Assumes file is .wav 
