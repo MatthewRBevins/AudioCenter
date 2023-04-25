@@ -131,9 +131,13 @@ def convert():
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     verifySessions()
-    output = [session["filename"]]
-    out = dict() 
-    fileLength = AudioTools.length(output)
+    fileLength = 0
+    try:
+        output = [session["filename"]]
+        out = dict() 
+        fileLength = AudioTools.length(output[0])
+    except:
+        pass
     errors = []
     if request.method == "POST":
         if request.values.get("form") == "1":
