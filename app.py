@@ -110,6 +110,7 @@ def editor():
     verifySessions()
     output = session["filename"]
     out = dict() 
+    fileLength = AudioTools.length(output)
     errors = []
     if request.method == "POST":
         if request.values.get("form") == "1":
@@ -118,6 +119,7 @@ def editor():
             filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
             session["filename"] = filename
+            fileLength = AudioTools.length(session["filename"])
         elif request.values.get("form") == "2":
             if session["filename"] != None:
                 if request.values.get("key-change"):
@@ -143,7 +145,7 @@ def editor():
             else:
                 errors.append("You have not uploaded a file.")
     out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"])
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 

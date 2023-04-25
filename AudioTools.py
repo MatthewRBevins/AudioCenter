@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import subprocess
+import contextlib
 from scipy.io import wavfile
 
 def mp3towav(file, newfile):
@@ -67,6 +68,13 @@ def writeFrames(file, frames, output):
         f.setframerate(samplerate)
         f.writeframes(audio.tobytes())
     return output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/cut.wav"
+
+def length(file):
+    with contextlib.closing(wave.open(file,'r')) as f:
+        frames = f.getnframes()
+        rate = f.getframerate()
+        duration = frames / float(rate)
+        return duration 
 
 def amplify(file, output, factor): 
     factor = factor #Adjust volume by factor
