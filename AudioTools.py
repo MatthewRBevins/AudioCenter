@@ -47,6 +47,7 @@ def detectSong(file):
 def keyChange(file, output, steps):
     y, sr = librosa.load(file)
     y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+    os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
     try:
         os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
     except:

@@ -65,7 +65,9 @@
                                         <input type="hidden" name="form" value="1">
                                         <input type="file" id="file-open" name="file-open" style="display:none">
                                     </form>
-                                    <a class="dropdown-item" href="{{out['output']}}" download>Save</a>
+                                    {%for i in out['output']%}
+                                    <a class="dropdown-item" href="{{i}}" download>Save</a>
+                                    {%endfor%}
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
