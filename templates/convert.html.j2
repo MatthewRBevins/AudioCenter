@@ -7,11 +7,11 @@
 {% block body %}        
         <br><br><br>
         <div id="bgtext">
-            <form method="POST" id="detectForm">
-                <input style="display:none" type="file" id="fileInput" />
+            <form method="POST" id="detectForm" enctype="multipart/form-data">
+                <input style="display:none" type="file" id="fileInput" name="file"/>
                 <h3 class="convertOptions">Detected Type: WAV</h3>
                 <select class="convertOptions">
-                    <option>Convert to MP3</option>
+                    <option>Convert to WAV</option>
                 </select>
                 <input class="convertOptions" type="submit" name="submit" value="Go!">
             </form>
@@ -19,6 +19,9 @@
                 <h1>Convert Audio Files</h1>
                 <h3><i>Drag and drop an audio file here</i></h3>
             </div>
+            {%if out.type == "convert"%}
+                    <h3>Download: <a href="{{out.output}}" download>{{base}}</a></h3>
+                {%endif%}-->
         </div>
     </div>
     <script>

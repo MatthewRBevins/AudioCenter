@@ -103,7 +103,22 @@ def detect():
 @app.route('/convert', methods=["GET","POST"])
 def convert():
     verifySessions()
-    return render_template('convert.html.j2', fn=session["filename"], userData=session["userData"])
+    output = None
+    out = dict() 
+    errors = []
+    basename = ""
+    if request.method == "POST":
+        print("HI")                         
+        f = request.files["file"]
+        t = str(int(time.time()))   
+        filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+        f.save(filename) 
+        session["filename"] = filename
+        out["type"] = "convert"
+        out["output"] = AudioTools.mp3towav(session["filename"])
+        basename = os.path.basename(out["output"])
+        
+    return render_template('convert.html.j2', fn=session["filename"], userData=session["userData"], out=out, base=basename)
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
