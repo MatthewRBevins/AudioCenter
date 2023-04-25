@@ -49,6 +49,7 @@ def detectSong(file):
 def keyChange(file, output, steps):
     y, sr = librosa.load(file)
     y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+    os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
     try:
         os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
     except:
@@ -70,6 +71,13 @@ def writeFrames(file, frames, output):
         f.setframerate(samplerate)
         f.writeframes(audio.tobytes())
     return output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/cut.wav"
+
+def length(file):
+    with contextlib.closing(wave.open(file,'r')) as f:
+        frames = f.getnframes()
+        rate = f.getframerate()
+        duration = frames / float(rate)
+        return duration 
 
 def amplify(file, output, factor): 
     factor = factor #Adjust volume by factor
