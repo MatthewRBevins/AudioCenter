@@ -10,10 +10,10 @@
     <div>
     <div class="container">
         <label for="file-input">
-            {%if userData.pfp == 1%}
-                <img class="rounded mx-auto" height="200" src="static/images/pfps/{{userToShowData.username}}/pfp.png">
+            {%if userToShowData.pfp == 1%}
+                <img class="rounded mx-auto" height="200" width="200" src="static/images/pfps/{{userToShowData.username}}/pfp.png">
             {%else%}
-                <img class="rounded mx-auto" height="200" src="static/images/pfps/default-pfp.png">
+                <img class="rounded mx-auto" height="200" width="200" src="static/images/pfps/default-pfp.png">
             {%endif%}
         </label>
         <form method="POST" id="pfpform" enctype="multipart/form-data">
@@ -46,8 +46,8 @@
                 <div class="modal-body">
                     <form method="POST">
                         <input type="hidden" name="formnum" value="3">
-                        <label><i class="fa-solid fa-location-dot ibr"></i></label><input type="text" name="place" id="placeinput" placeholder="Enter location..."><br><br>
-                        <label><i class="fa-solid fa-link ibr"></i></label><input type="url" name="website" id="websiteinput" placeholder="Enter website link..."><br><br>
+                        <label><i class="fa-solid fa-location-dot ibr"></i></label><input type="text" name="place" id="placeinput" placeholder="Enter location..." maxlength="40"><br><br>
+                        <label><i class="fa-solid fa-link ibr"></i></label><input type="url" name="website" id="websiteinput" placeholder="Enter website link..." maxlength="40"><br><br>
                         <input type="submit" class="btn btn-primary" value="Update">
                     </form>
                 </div>
