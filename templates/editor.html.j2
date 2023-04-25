@@ -92,7 +92,7 @@
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                     <label class="dropdown-item" onclick="showKey()" data-bs-toggle="modal" data-bs-target="#keyModal">Key Change</label>
                                     <label class="dropdown-item" onclick="showAmp()" data-bs-toggle="modal" data-bs-target="#ampModal">Amplify</label>
-                                    <label for="split-tracks" class="dropdown-item">Split Tracks</label>
+                                    <label id="clickme" for="split-tracks" class="dropdown-item show show2 btn" onclick="alertModal(50); this.onclick=null; showBar(); hideBar(50);" data-bs-toggle="modal" data-bs-target="#exampleModal">Split Tracks</label>
                                     <label class="dropdown-item" onclick="showSpeed()" data-bs-toggle="modal" data-bs-target="#speedModal">Speed Change</label>
                                     <form method="POST" style="display:none">
                                         <input type="hidden" name="form" value="2">
@@ -113,6 +113,24 @@
                         </div>
                     </div>
                 </nav>
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <div id="bar" class="counter" style="">0</div>
+                            <div id="bar2" class="progressbar" style="">
+                                <span class="progress"></span>
+                            </div>
+                            <div id="text" style="display:none">
+                                <p>All done!</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
                 <div id="waveform"></div>
                 <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="form" value="2">
