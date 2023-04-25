@@ -116,7 +116,7 @@ def convert():
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     verifySessions()
-    output = session["filename"]
+    output = [session["filename"]]
     out = dict() 
     errors = []
     if request.method == "POST":
@@ -131,22 +131,38 @@ def editor():
                 if request.values.get("key-change"):
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
-                    output = AudioTools.keyChange(session["filename"], 'static/output/', steps)
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
                 elif request.values.get("amplify"):
                     factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
                     out["type"] = "files"
-                    output = AudioTools.amplify(session["filename"], 'static/output/', factor)
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    output = AudioTools.amplify(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                 elif request.values.get("split-tracks"):
                     out["type"] = "files"
-                    output = AudioTools.split(session["filename"], 'static/output/', 2)
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    output = AudioTools.split(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
                     session["filename"] = output[0]
                 elif request.values.get("speed-change"):
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
-                    output = AudioTools.changeSpeed(session["filename"], 'static/output/', factor)
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
             else:
                 errors.append("You have not uploaded a file.")
