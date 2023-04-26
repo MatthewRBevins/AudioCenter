@@ -34,22 +34,24 @@ class userData:
     def __init__(self, username, loggedIn):
         self.username = username
         self.loggedIn = loggedIn
-        data = executeQuery("SELECT joined,pfp,bio,place,website FROM audiocenter_users WHERE username=%s", (self.username,))
+        data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users WHERE username=%s", (self.username,))
         if len(data) > 0:
             self.joined = data[0]["joined"]
             self.pfp = data[0]["pfp"]
             self.bio = data[0]["bio"]
             self.place = data[0]["place"]
             self.website = data[0]["website"]
+            self.id = data[0]["id"]
         else:
             self.joined = None
             self.pfp = None
             self.bio = None
             self.place = None
             self.website = None
+            self.id = None
     def createDict(self):
-        keys = ["username", "loggedIn", "joined", "pfp", "bio", "place", "website"]
-        values = [self.username, self.loggedIn, self.joined, self.pfp, self.bio, self.place, self.website]
+        keys = ["username", "loggedIn", "joined", "pfp", "bio", "place", "website", "id"]
+        values = [self.username, self.loggedIn, self.joined, self.pfp, self.bio, self.place, self.website, self.id]
         data = list(zip(keys, values))
         d = {k: v for k, v in data}
         return d
@@ -276,3 +278,14 @@ def userShow(userToShow):
 def signout():
     session["userData"] = userData("guest", False).createDict()
     return redirect(url_for("index"))
+
+@app.route('/follow', methods=['POST'])
+def follow():
+    if session["userData"]["loggedIn"]:
+        followingID = request.values.get("following")
+        l = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
+        if len(l) == 0:
+            executeQuery("INSERT INTO audiocenter_followers(follower_id, following_id) VALUES(%s, %s)", (session["userData"]["id"], followingID))
+        else:
+            executeQuery("DELETE FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
+    return 'success'
