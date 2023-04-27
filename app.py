@@ -118,12 +118,18 @@ def convert():
     if request.method == "POST":
         print("HI")                         
         f = request.files["file"]
+        extension = os.path.splitext(f.filename)[1].lower()
+        print(extension)
         t = str(int(time.time()))   
         filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-        f.save(filename) 
+        if extension != ".wav":
+            f.save(filename) 
         session["filename"] = filename
         out["type"] = "convert"
-        out["output"] = AudioTools.mp3towav(session["filename"])
+        if extension.lower() != ".wav":
+            out["output"] = AudioTools.mp3towav(session["filename"])
+        else:
+            out["output"] = session["filename"]
         basename = os.path.basename(out["output"])
         
     return render_template('convert.html.j2', fn=session["filename"], userData=session["userData"], out=out, base=basename)
