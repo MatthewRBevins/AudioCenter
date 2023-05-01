@@ -33,10 +33,12 @@
             <h4>{{out.output.artist}}</h4>
             <img src="{{out.output.image}}">
             <br><br><br>
-            <h5><i>Lyrics</i></h5>
-            {%for i in out.output.lyrics%}
-            <p>{{i}}</p>
-            {%endfor%}
+            {%if out.output.lyrics%}
+                <h5><i>Lyrics</i></h5>
+                {%for i in out.output.lyrics%}
+                <p>{{i}}</p>
+                {%endfor%}
+            {%endif%}
         {%else%}
         <div id="bgtext">
             <div class="fadein">

@@ -28,7 +28,7 @@
                         </li>
                     </ul>
                     <form class="d-flex" method="POST" action="{{url_for('signout')}}">
-                        {%if userData.username != '' and userData is defined%}
+                        {%if userData.loggedIn == true%}
                             {%if userData.pfp == 1%}
                                 <a href="{{url_for('profile')}}"><img class="rounded mx-auto" height="50" width="50" src="static/images/pfps/{{userData.username}}/pfp.png"></a>
                             {%else%}

@@ -4,6 +4,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL  
 import numpy as np
+# FOR SERVER
+#import public.AudioCenter.AudioCenter.AudioTools
 import AudioTools
 import os
 import time
@@ -34,22 +36,24 @@ class userData:
     def __init__(self, username, loggedIn):
         self.username = username
         self.loggedIn = loggedIn
-        data = executeQuery("SELECT joined,pfp,bio,place,website FROM audiocenter_users WHERE username=%s", (self.username,))
+        data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users WHERE username=%s", (self.username,))
         if len(data) > 0:
             self.joined = data[0]["joined"]
             self.pfp = data[0]["pfp"]
             self.bio = data[0]["bio"]
             self.place = data[0]["place"]
             self.website = data[0]["website"]
+            self.id = data[0]["id"]
         else:
             self.joined = None
             self.pfp = None
             self.bio = None
             self.place = None
             self.website = None
+            self.id = None
     def createDict(self):
-        keys = ["username", "loggedIn", "joined", "pfp", "bio", "place", "website"]
-        values = [self.username, self.loggedIn, self.joined, self.pfp, self.bio, self.place, self.website]
+        keys = ["username", "loggedIn", "joined", "pfp", "bio", "place", "website", "id"]
+        values = [self.username, self.loggedIn, self.joined, self.pfp, self.bio, self.place, self.website, self.id]
         data = list(zip(keys, values))
         d = {k: v for k, v in data}
         return d
@@ -122,8 +126,10 @@ def convert():
         print(extension)
         t = str(int(time.time()))   
         filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-        if extension != ".wav":
+        try:
             f.save(filename) 
+        except:
+            pass
         session["filename"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
@@ -282,9 +288,22 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
+    following = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], userToShowData["id"]))
+    userToShowData["following"] = len(following)
     return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)
 
 @app.route('/signout', methods=['POST'])
 def signout():
     session["userData"] = userData("guest", False).createDict()
     return redirect(url_for("index"))
+
+@app.route('/follow', methods=['POST'])
+def follow():
+    if session["userData"]["loggedIn"]:
+        followingID = request.values.get("following")
+        l = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
+        if len(l) == 0:
+            executeQuery("INSERT INTO audiocenter_followers(follower_id, following_id) VALUES(%s, %s)", (session["userData"]["id"], followingID))
+        else:
+            executeQuery("DELETE FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
+    return 'success'
