@@ -126,8 +126,10 @@ def convert():
         print(extension)
         t = str(int(time.time()))   
         filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-        if extension != ".wav":
+        try:
             f.save(filename) 
+        except:
+            pass
         session["filename"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
