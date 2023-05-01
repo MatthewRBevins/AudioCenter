@@ -16,16 +16,20 @@
                 <img class="rounded mx-auto" height="200" width="200" src="static/images/pfps/default-pfp.png">
             {%endif%}
         </label>
+        {%if userToShowData.username == userData.username%}
         <form method="POST" id="pfpform" enctype="multipart/form-data">
             <input type="hidden" name="formnum" value="0">
             <input id="file-input" name="file-input" type="file" style="display:none"/><br><br>
         </form>
+        {%endif%}
         <div class="textedit" id="usernamecontainer">
             <h1 class="text" id="username">@{{userToShowData.username}}</h1>
-            {%if 1 == 1%}
-            <button class="btn btn-primary" id="followBtn">Follow</button>
-            {%else%}
-            <button class="btn btn-white" id="followBtn">Following</button>
+            {%if userToShowData.username != userData.username%}
+                {%if userToShowData.following == 0%}
+                <button class="btn btn-primary" id="followBtn">Follow</button>
+                {%else%}
+                <button class="btn btn-light" id="followBtn">Following</button>
+                {%endif%}
             {%endif%}
             <form class="form" method="POST">
                 <input type="hidden" name="formnum" value="1">

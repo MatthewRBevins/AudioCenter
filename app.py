@@ -4,6 +4,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL  
 import numpy as np
+# FOR SERVER
+#import public.AudioCenter.AudioCenter.AudioTools
 import AudioTools
 import os
 import time
@@ -272,6 +274,8 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
+    following = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], userToShowData["id"]))
+    userToShowData["following"] = len(following)
     return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)
 
 @app.route('/signout', methods=['POST'])
