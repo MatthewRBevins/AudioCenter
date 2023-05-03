@@ -121,3 +121,19 @@ def changeSpeed(file, output, factor):
 
     wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
     return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
+
+def specGen(ratio, audio):
+    wav_obj = wave.open(audio, 'rb')
+    sample_freq = wav_obj.getframerate()
+    n_samples = wav_obj.getnframes()
+    time = n_samples/sample_freq
+    signal_wave = wav_obj.readframes(n_samples)
+    signal_array = np.frombuffer(signal_wave, dtype=np.int16)
+    plt.figure(figsize=(5*ratio, 5))
+    plt.specgram(signal_array, Fs=sample_freq, vmin=-20, vmax=50)
+    plt.title('Spectrogram for ' + audio)
+    plt.ylabel('Frequency (Hz)')
+    plt.xlabel('Time (s)')
+    plt.xlim(0, time)
+    plt.colorbar()
+    plt.show()
