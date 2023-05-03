@@ -11,7 +11,7 @@
     <body class="bg-dark text-light text-center"> 
         <nav class="navbar navbar-expand-lg navbar-light bg-info">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{url_for('index')}}">AudioCenter</a>
+                <a class="navbar-brand" href="{{url_for('index')}}"><i class="fa-solid fa-microphone"></i> AudioCenter</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
@@ -21,10 +21,10 @@
                             <a class="nav-link active" href="{{url_for('editor')}}">Edit</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="{{url_for('detect')}}">Detect</a>
+                            <a class="nav-link active" href="{{url_for('detect')}}"><i class="fa-solid fa-music"></i> Detect</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="{{url_for('convert')}}">Convert</a>
+                            <a class="nav-link active" href="{{url_for('convert')}}"><i class="fa-solid fa-arrows-rotate"></i> Convert</a>
                         </li>
                     </ul>
                     <form class="d-flex" method="POST" action="{{url_for('signout')}}">
