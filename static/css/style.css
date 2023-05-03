@@ -5964,8 +5964,7 @@ textarea.form-control-lg {
   float: left;
   width: 100%;
   margin-right: -100%;
-  -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
+  backface-visibility: hidden;
   transition: transform 0.6s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -11775,7 +11774,6 @@ form {
 .bgprofile {
   background-image: url("/static/images/LoginBackground.png");
   background-position: center;
-  background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
   position: relative;
@@ -11795,9 +11793,6 @@ a {
   background-size: cover;
   background-attachment: fixed;
   position: relative;
-  width: 173%;
-  margin-left: -37%;
-  height: 100%;
 }
 
 .bg3 {

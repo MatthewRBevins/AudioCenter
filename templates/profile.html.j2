@@ -73,6 +73,8 @@
         {% for file in files %}
             {% set audio = path + '/' + file %}
             {{path}}<br>
+            <a href="https://twitter.com/intent/tweet?text=Check out my AudioCenter creation: https://audio.center/{{path}}" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<br>
             <h3><a href={{audio}}>{{file}}</a></h3><br>
         {% endfor %}
     </div>

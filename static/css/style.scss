@@ -59,9 +59,8 @@ form
 .bgprofile {
     background-image:url("/static/images/LoginBackground.png");
     background-position:center;
-    background-repeat:no-repeat;
     background-size:cover; 
-    background-attachment:fixed;
+    background-attachment:fixed; 
     position:relative;
     width:173%;
     margin-left:-37%; 
@@ -79,10 +78,7 @@ a {
     background-repeat:no-repeat;
     background-size:cover; 
     background-attachment:fixed;
-    position:relative;
-    width:173%;
-    margin-left:-37%; 
-    height:100%;
+    position:relative;  
 }
 
 .bg3
