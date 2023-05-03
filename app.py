@@ -36,8 +36,12 @@ class userData:
     def __init__(self, username, loggedIn):
         self.username = username
         self.loggedIn = loggedIn
-        data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users WHERE username=%s", (self.username,))
+        data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users u WHERE username=%s", (self.username,))
+        following = executeQuery("SELECT following_id FROM audiocenter_followers WHERE follower_id=%s", data[0]["id"])
+        followers = executeQuery("SELECT follower_id FROM audiocenter_followers WHERE following_id=%s", data[0]["id"])
         if len(data) > 0:
+            self.followers = followers
+            self.following = following
             self.joined = data[0]["joined"]
             self.pfp = data[0]["pfp"]
             self.bio = data[0]["bio"]
@@ -45,6 +49,8 @@ class userData:
             self.website = data[0]["website"]
             self.id = data[0]["id"]
         else:
+            self.followers = None
+            self.following = None
             self.joined = None
             self.pfp = None
             self.bio = None
