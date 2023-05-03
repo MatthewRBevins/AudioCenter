@@ -257,7 +257,12 @@ def profile():
             if newWebsite != "":
                 executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
     session["userData"] = userData(session["userData"]["username"], True).createDict()
-    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"])
+    res = []
+    dir_path = 'static/audio/' + session["userData"]["username"] + '/output/'
+    # Iterate directory
+    for (dir_path, dir_names, file_names) in os.walk(dir_path):
+        res.extend(file_names) 
+    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path)
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
