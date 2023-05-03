@@ -199,6 +199,8 @@ def editor():
                     session["filename"] = output[0]
             else:
                 errors.append("You have not uploaded a file.")
+        if request.values.get("hide") is not None:
+            session["filename"] = ""
     out["output"] = output
     return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
 
