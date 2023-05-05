@@ -37,8 +37,8 @@ class userData:
         self.username = username
         self.loggedIn = loggedIn
         data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users u WHERE username=%s", (self.username,))
-        following = executeQuery("SELECT following_id FROM audiocenter_followers WHERE follower_id=%s", data[0]["id"])
-        followers = executeQuery("SELECT follower_id FROM audiocenter_followers WHERE following_id=%s", data[0]["id"])
+        following = executeQuery("SELECT following_id FROM audiocenter_followers WHERE follower_id=%s", (data[0]["id"],))
+        followers = executeQuery("SELECT follower_id FROM audiocenter_followers WHERE following_id=%s", (data[0]["id"],))
         if len(data) > 0:
             self.followers = followers
             self.following = following
@@ -264,11 +264,14 @@ def profile():
                 executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
     session["userData"] = userData(session["userData"]["username"], True).createDict()
     res = []
+    spinoff = True
     dir_path = 'static/audio/' + session["userData"]["username"] + '/output/'
     # Iterate directory
     for (dir_path, dir_names, file_names) in os.walk(dir_path):
         res.extend(file_names) 
-    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path)
+    if len(res) > 0:
+        spinoff = False
+    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path, spinoff=spinoff)
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])

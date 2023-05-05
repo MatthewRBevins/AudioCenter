@@ -2,12 +2,15 @@
 
 {% block head %}
         <title>Log In</title>
+        <style>
+            body {overflow:hidden}
+        </style>
 {% endblock %}
 
 {% block body %}
-    <div class="bg2" id="fadefast">
-    <br>
-        <div class="fadein smtext" id="plain">
+    <div class="bg2spinoff" id="fadefast">
+        <br>
+        <div class="fadein smtext" id="plain"> <!-- fadein smtext plain -->
             <br>
             {% if invalid %}
                 <div class="error">

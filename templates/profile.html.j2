@@ -5,7 +5,12 @@
 {% endblock %}
 
 {% block body %}
+{% if spinoff %}
+<div class="bg2spinoff">
+{% else %}
+<div class="allowover">
 <div class="bg2">
+{% endif %}
     <br>
     <div>
     <div class="container">
@@ -135,4 +140,6 @@
     })
 </script>
 {%endif%}
+</div>
+<br><br>
 {% endblock %}
