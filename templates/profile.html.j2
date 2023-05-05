@@ -14,6 +14,7 @@
     <br>
     <div>
     <div class="container">
+        {{userToShowData.followers}}
         <label for="file-input">
             {%if userToShowData.pfp == 1%}
                 <img class="rounded mx-auto" height="200" width="200" src="static/images/pfps/{{userToShowData.username}}/pfp.png">
@@ -73,7 +74,9 @@
             </div>
         {%endif%}
         <h5><i class="fa-solid fa-location-dot ibr"></i><span id="placetext">{{userToShowData.place}}</span><i class="fa-solid fa-link ibr"></i><a target="_blank" href="{{userToShowData.website}}"><span id="websitetext">{{userToShowData.website}}</span></a><i class="fa-solid fa-calendar ibr"></i>{{userToShowData.joined}}{%if userToShowData.username == userData.username%}<i class="fa-solid fa-pen-to-square ibr iho" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>{%endif%}</h5>
-        <h5 class="text-light"><span class="spanbr">{{userToShowData.followers|length}} Followers</span><span class="spanbr">{{userToShowData.following|length}} Following</span></h5>
+        <h5 class="text-light"><span class="spanbr">{{userToShowData.followers}} Followers</span><span class="spanbr">{{userToShowData.following}} Following</span></h5>
+        {{userToShowData.followers}}
+        {{userToShowData}}
         <h1>{{userToShowData.username}}'s Audio:</h1>
         {% for file in files %}
             {% set audio = path + '/' + file %}
