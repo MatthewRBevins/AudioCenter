@@ -14,7 +14,6 @@
     <br>
     <div>
     <div class="container">
-        {{userToShowData.followers}}
         <label for="file-input">
             {%if userToShowData.pfp == 1%}
                 <img class="rounded mx-auto" height="200" width="200" src="static/images/pfps/{{userToShowData.username}}/pfp.png">
@@ -71,20 +70,55 @@
                 </div>
                 </div>
             </div>
-            </div>
+        </div>
         {%endif%}
         <h5><i class="fa-solid fa-location-dot ibr"></i><span id="placetext">{{userToShowData.place}}</span><i class="fa-solid fa-link ibr"></i><a target="_blank" href="{{userToShowData.website}}"><span id="websitetext">{{userToShowData.website}}</span></a><i class="fa-solid fa-calendar ibr"></i>{{userToShowData.joined}}{%if userToShowData.username == userData.username%}<i class="fa-solid fa-pen-to-square ibr iho" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>{%endif%}</h5>
-        <h5 class="text-light"><span class="spanbr">{{userToShowData.followers}} Followers</span><span class="spanbr">{{userToShowData.following}} Following</span></h5>
-        {{userToShowData.followers}}
-        {{userToShowData}}
+        <div class="modal fade" id="followersModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">{{userToShowData.username}}'s Followers</h5>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        {%for i in userToShowData.followers%}
+                        <a href="@{{i.username}}">{{i.username}}</a>
+                        {%endfor%}
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="followingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">{{userToShowData.username}}'s Following</h5>
+                </div>
+                <div class="modal-body">
+                    {%for i in userToShowData.following%}
+                        <a href="@{{i.username}}">{{i.username}}</a>
+                    {%endfor%}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <h5 class="text-light"><span class="spanbr"><button class="btn btn-default text-light" data-bs-toggle="modal" data-bs-target="#followersModal">{{userToShowData.followers|length}} Followers</button></span><span class="spanbr"><button class="btn btn-default text-light" data-bs-toggle="modal" data-bs-target="#followingModal">{{userToShowData.following|length}} Following</button></span></h5>
+        {%if userToShowData.username == userData.username%}
         <h1>{{userToShowData.username}}'s Audio:</h1>
         {% for file in files %}
-            {% set audio = path + '/' + file %}
-            {{path}}<br>
-            <a href="https://twitter.com/intent/tweet?text=Check out my AudioCenter creation: https://audio.center/{{path}}" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-<br>
-            <h3><a href={{audio}}>{{file}}</a></h3><br>
+            <h3><a href="{{file}}" download>{{file}}</a></h3>
+            <a target="_blank" href="https://twitter.com/intent/tweet?text=Check out my AudioCenter creation: https://audio.center/{{file}}" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            <button class="btn btn-primary" onclick="navigator.clipboard.writeText('audio.center/{{file}}'); alert('Copied link!')">Copy Link</button>
+            <br><br>
         {% endfor %}
+        {%endif%}
     </div>
 </div>
 {%if userToShowData.username == userData.username%}

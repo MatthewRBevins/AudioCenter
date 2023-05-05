@@ -41,6 +41,22 @@ def trimSong(originalWavPath, newWavPath):
     trim = wavfile.write(newWavPath, sampleRate, waveData[0:endSample])
     return trim
 
+def makeCut(filepath, startpoint, endpoint, width):
+    sound = AudioSegment.from_file(filepath)
+    print(startpoint)
+    print(endpoint)
+    print(width)
+    print("****")
+    startpoint = startpoint/width
+    endpoint = endpoint/width
+    soundlength = len(sound)
+    print(startpoint)
+    print(soundlength)
+    print(startpoint*soundlength)
+    finishedcut = sound[:int(startpoint*soundlength)] + sound[int(endpoint*soundlength):]
+    finishedcut.export(filepath, format='wav')
+    
+
 def detectSong(file):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

@@ -7,6 +7,9 @@
 var backend = null;
 var globalWave = null;
 var currentBuffer = null;
+var totalWidth = 0;
+var startCut = 0;
+var endCut = 0;
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1668,6 +1671,9 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
     key: "updateProgress",
     value: function updateProgress(position) {
         //MATTHEW
+        startCut = left;
+        endCut = left + widthh;
+        totalWidth = document.getElementById("waveform").getElementsByTagName("canvas")[0].style.width.split('px')[0];
         this.style(this.progressWave, {
           left: left + 'px',
           width: widthh + 'px'

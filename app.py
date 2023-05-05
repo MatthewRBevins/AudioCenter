@@ -37,8 +37,8 @@ class userData:
         self.username = username
         self.loggedIn = loggedIn
         data = executeQuery("SELECT joined,pfp,bio,place,website,id FROM audiocenter_users u WHERE username=%s", (self.username,))
-        following = executeQuery("SELECT following_id FROM audiocenter_followers WHERE follower_id=%s", (data[0]["id"],))
-        followers = executeQuery("SELECT follower_id FROM audiocenter_followers WHERE following_id=%s", (data[0]["id"],))
+        following = executeQuery("SELECT username FROM audiocenter_users u JOIN audiocenter_followers f ON f.follower_id=%s WHERE u.id=f.following_id;", (data[0]["id"],))
+        followers = executeQuery("SELECT username FROM audiocenter_users u JOIN audiocenter_followers f ON f.following_id=%s WHERE u.id=f.follower_id;", (data[0]["id"],))
         if len(data) > 0:
             self.followers = followers
             self.following = following
@@ -58,8 +58,8 @@ class userData:
             self.website = None
             self.id = None
     def createDict(self):
-        keys = ["username", "loggedIn", "joined", "pfp", "bio", "place", "website", "id"]
-        values = [self.username, self.loggedIn, self.joined, self.pfp, self.bio, self.place, self.website, self.id]
+        keys = ["username", "loggedIn", "followers", "following", "joined", "pfp", "bio", "place", "website", "id"]
+        values = [self.username, self.loggedIn, self.followers, self.following, self.joined, self.pfp, self.bio, self.place, self.website, self.id]
         data = list(zip(keys, values))
         d = {k: v for k, v in data}
         return d
@@ -207,6 +207,8 @@ def editor():
                 errors.append("You have not uploaded a file.")
         if request.values.get("hide") is not None:
             session["filename"] = ""
+        if request.values.get("delete") is not None:
+            AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
     out["output"] = output
     return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
 
@@ -267,8 +269,9 @@ def profile():
     spinoff = True
     dir_path = 'static/audio/' + session["userData"]["username"] + '/output/'
     # Iterate directory
-    for (dir_path, dir_names, file_names) in os.walk(dir_path):
-        res.extend(file_names) 
+    for (dirpath, dir_names, file_names) in os.walk(dir_path):
+        for i in file_names:
+            res.append(dirpath + '/' + i)
     if len(res) > 0:
         spinoff = False
     return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path, spinoff=spinoff)
@@ -304,8 +307,6 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
-    following = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], userToShowData["id"]))
-    userToShowData["following"] = len(following)
     return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)
 
 @app.route('/signout', methods=['POST'])
