@@ -9,8 +9,46 @@
         <br><br><br>
         <div id="bgtext">
             <div class="fadein">
-                <br><br><br><br><br><br>
-                <p class="maintext">Audio Center</p>
+                {%if userData["loggedIn"]%}
+                <h1 class="maintext">Home</h1>
+                <div id="posts" class="bg-dark">
+                    <br>
+                    {{res}}
+                    <button class="btn btn-primary">Following</button><button class="btn btn-secondary">Trending</button>
+                    <div class="post">
+                        <h1 class="post-title">Post Title</h1>
+                        <h3 class="post-author">Post Author</h3>
+                        <p class="post-body">Post</p>
+                        <button class="btn btn-success">Like</button>
+                        <button class="btn btn-danger">Dislike</button>
+                    </div>
+                    <hr>
+                    <div class="post">
+                        <h1 class="post-title">Post Title</h1>
+                        <p class="post-body">Post</p>
+                        <button class="btn btn-success">Like</button>
+                        <button class="btn btn-danger">Dislike</button>
+                    </div>
+                    <hr>
+                    <div class="post">
+                        <h1 class="post-title">Post Title</h1>
+                        <p class="post-body">Post</p>
+                        <button class="btn btn-success">Like</button>
+                        <button class="btn btn-danger">Dislike</button>
+                    </div>
+                    <hr>
+                    <div class="post">
+                        <h1 class="post-title">Post Title</h1>
+                        <p class="post-body">Post</p>
+                        <button class="btn btn-success">Like</button>
+                        <button class="btn btn-danger">Dislike</button>
+                    </div>
+                    <hr>
+                    <button class="btn btn-primary">Load More</button>
+                </div>
+                {%else%}
+                <h1 class="maintext">Audio Center</h1>
+                {%endif%}
             </div>
         </div>
     </div>

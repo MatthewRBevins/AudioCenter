@@ -81,7 +81,16 @@ def verifySessions():
 @app.route('/')
 def index():
     verifySessions()
-    return render_template('index.html.j2', userData=session["userData"])
+    res = None
+    if session["userData"]["loggedIn"]:
+        res = []
+        for i in session["userData"]["following"]:
+            dir_path = 'static/audio/' + i["username"] + '/output/'
+            # Iterate directory
+            for (dirpath, dir_names, file_names) in os.walk(dir_path):
+                for j in file_names:
+                    res.append(dirpath + '/' + j)
+    return render_template('index.html.j2', userData=session["userData"], posts=res)
 
 @app.route('/detect', methods=["GET","POST"])
 def detect():
@@ -307,7 +316,7 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
-    return render_template('profile.html.j2', edit=False, userData=session["userData"], userToShowData=userToShowData)
+    return render_template('profile.html.j2', spinoff=True, edit=False, userData=session["userData"], userToShowData=userToShowData)
 
 @app.route('/signout', methods=['POST'])
 def signout():

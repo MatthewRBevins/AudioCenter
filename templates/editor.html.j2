@@ -256,7 +256,7 @@
             let a = document.getElementById("spectogram")
             let b = a.getElementsByTagName("canvas")
             for (let i of b) {
-                i.style.marginLeft = '-960px';
+                i.style.marginLeft = '-' + window.totalWidth/2 + 'px';
             }
         }, 100)
 
