@@ -89,7 +89,8 @@ def index():
             # Iterate directory
             for (dirpath, dir_names, file_names) in os.walk(dir_path):
                 for j in file_names:
-                    res.append(dirpath + '/' + j)
+                    res.append(dict(url=dirpath + '/' + j, author=i["username"]))
+        print(res)
     return render_template('index.html.j2', userData=session["userData"], posts=res)
 
 @app.route('/detect', methods=["GET","POST"])
@@ -140,7 +141,11 @@ def convert():
         extension = os.path.splitext(f.filename)[1].lower()
         print(extension)
         t = str(int(time.time()))   
-        filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+        try:
+            os.mkdir('static/audio/' + session["userData"]["username"] + '/convert')
+        except:
+            pass
+        filename = 'static/audio/' + session["userData"]["username"] + '/convert/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
         try:
             f.save(filename) 
         except:
@@ -170,7 +175,11 @@ def editor():
         if request.values.get("form") == "1":
             f = request.files["file-open"]
             t = str(int(time.time()))   
-            filename = 'static/audio/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+            try:
+                os.mkdir('static/audio/' + session["userData"]["username"] + '/raw')
+            except:
+                pass
+            filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
             session["filename"] = filename
             fileLength = AudioTools.length(session["filename"])

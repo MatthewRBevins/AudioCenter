@@ -13,38 +13,17 @@
                 <h1 class="maintext">Home</h1>
                 <div id="posts" class="bg-dark">
                     <br>
-                    {{res}}
-                    <button class="btn btn-primary">Following</button><button class="btn btn-secondary">Trending</button>
-                    <div class="post">
-                        <h1 class="post-title">Post Title</h1>
-                        <h3 class="post-author">Post Author</h3>
-                        <p class="post-body">Post</p>
-                        <button class="btn btn-success">Like</button>
-                        <button class="btn btn-danger">Dislike</button>
-                    </div>
-                    <hr>
-                    <div class="post">
-                        <h1 class="post-title">Post Title</h1>
-                        <p class="post-body">Post</p>
-                        <button class="btn btn-success">Like</button>
-                        <button class="btn btn-danger">Dislike</button>
-                    </div>
-                    <hr>
-                    <div class="post">
-                        <h1 class="post-title">Post Title</h1>
-                        <p class="post-body">Post</p>
-                        <button class="btn btn-success">Like</button>
-                        <button class="btn btn-danger">Dislike</button>
-                    </div>
-                    <hr>
-                    <div class="post">
-                        <h1 class="post-title">Post Title</h1>
-                        <p class="post-body">Post</p>
-                        <button class="btn btn-success">Like</button>
-                        <button class="btn btn-danger">Dislike</button>
-                    </div>
-                    <hr>
-                    <button class="btn btn-primary">Load More</button>
+                    <button class="btn btn-primary">For You</button><button class="btn btn-secondary">Trending</button>
+                    {%for i in posts%}
+                        <div class="post">
+                            <h1 class="post-title">{{i.url}}</h1>
+                            <h3 class="post-author"><a href="@{{i.author}}">{{i.author}}</a></h3>
+                            <p clas="post-body">{{i.url}}</p>
+                            <button class="btn btn-success"><i class="fa-regular fa-thumbs-up"></i></button>
+                            <button class="btn btn-danger"><i class="fa-regular fa-thumbs-down"></i></button>
+                        </div>
+                        <hr>
+                    {%endfor%}
                 </div>
                 {%else%}
                 <h1 class="maintext">Audio Center</h1>
