@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 from flask_mysqldb import MySQL  
 import numpy as np
+import json
 # FOR SERVER
 #import public.AudioCenter.AudioCenter.AudioTools
 import AudioTools
@@ -64,6 +65,10 @@ class userData:
         d = {k: v for k, v in data}
         return d
 
+def getPosts(currentUser, userToShow):
+    data = executeQuery("SELECT * FROM audiocenter_posts WHERE author_id=%s", (userToShow.id,))
+    return data
+
 def verifySessions():
     print("VERIFY SESSIONS")
     #Update this when adding new session vars
@@ -81,16 +86,17 @@ def verifySessions():
 @app.route('/')
 def index():
     verifySessions()
-    res = None
+    res = []
     if session["userData"]["loggedIn"]:
-        res = []
         for i in session["userData"]["following"]:
-            dir_path = 'static/audio/' + i["username"] + '/output/'
-            # Iterate directory
-            for (dirpath, dir_names, file_names) in os.walk(dir_path):
-                for j in file_names:
-                    res.append(dict(url=dirpath + '/' + j, author=i["username"]))
-        print(res)
+            userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
+            post = executeQuery("SELECT * FROM audiocenter_posts WHERE author_id=%s", (userID[0]["id"],))
+            for i in post:
+                liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
+                i["liked"] = 0
+                if len(liked) != 0:
+                    i["liked"] = liked[0]["like_or_dislike"]
+                res.append(i)
     return render_template('index.html.j2', userData=session["userData"], posts=res)
 
 @app.route('/detect', methods=["GET","POST"])
@@ -204,6 +210,17 @@ def editor():
                         pass
                     output = AudioTools.amplify(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
+                elif request.values.get("savepost"):
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
+                    except:
+                        pass
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                    except:
+                        pass
+                    executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility) VALUES(%s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis")))
+                    AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                 elif request.values.get("split-tracks"):
                     out["type"] = "files"
                     try:
@@ -285,11 +302,13 @@ def profile():
     session["userData"] = userData(session["userData"]["username"], True).createDict()
     res = []
     spinoff = True
-    dir_path = 'static/audio/' + session["userData"]["username"] + '/output/'
+    dir_path = 'static/audio/' + session["userData"]["username"] + '/save'
     # Iterate directory
     for (dirpath, dir_names, file_names) in os.walk(dir_path):
-        for i in file_names:
-            res.append(dirpath + '/' + i)
+        for i in dir_names:
+            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
+            #res.append(metadata)
+            res.append('post')
     if len(res) > 0:
         spinoff = False
     return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path, spinoff=spinoff)
@@ -325,7 +344,15 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
-    return render_template('profile.html.j2', spinoff=True, edit=False, userData=session["userData"], userToShowData=userToShowData)
+    dir_path = 'static/audio/' + userToShow + '/save'
+    res = []
+    # Iterate directory
+    for (dirpath, dir_names, file_names) in os.walk(dir_path):
+        for i in dir_names:
+            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
+            #res.append(metadata)
+            res.append('post')
+    return render_template('profile.html.j2', spinoff=True, edit=False, userData=session["userData"], userToShowData=userToShowData, files=res)
 
 @app.route('/signout', methods=['POST'])
 def signout():
@@ -341,4 +368,10 @@ def follow():
             executeQuery("INSERT INTO audiocenter_followers(follower_id, following_id) VALUES(%s, %s)", (session["userData"]["id"], followingID))
         else:
             executeQuery("DELETE FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
+    return 'success'
+
+@app.route('/like', methods=['POST'])
+def like():
+    executeQuery("DELETE FROM audiocenter_likes WHERE post_id=%s AND user_id=%s", (request.values.get("postID"), session["userData"]["id"]))
+    executeQuery("INSERT INTO audiocenter_likes(user_id, post_id, like_or_dislike) VALUES(%s, %s, %s)", (session["userData"]["id"], request.values.get("postID"), request.values.get("likeOrDislike")))
     return 'success'

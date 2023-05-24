@@ -2,6 +2,27 @@
 
 {% block head %}
         <title>Audio Center</title>
+        <script>
+                    function likePost(postID, likeOrDislike) {
+                        let fd = new FormData()
+                        fd.append("postID", postID)
+                        fd.append("likeOrDislike", likeOrDislike)
+                        $.ajax({
+                            type: "POST",
+                            url: "/like",
+                            data: fd,
+                            cache: false,
+                            processData: false,
+                            contentType: false,
+                            success: function(result) {
+                                console.log(result)
+                            },
+                            error: function(result) {
+                                console.log(result)
+                            }
+                        })  
+                    }
+                </script>
 {% endblock %}
 
 {% block body %}        
@@ -16,11 +37,12 @@
                     <button class="btn btn-primary">For You</button><button class="btn btn-secondary">Trending</button>
                     {%for i in posts%}
                         <div class="post">
-                            <h1 class="post-title">{{i.url}}</h1>
+                            <h1 class="post-title">{{i.title}}</h1>
+                            {{i}}
                             <h3 class="post-author"><a href="@{{i.author}}">{{i.author}}</a></h3>
                             <p clas="post-body">{{i.url}}</p>
-                            <button class="btn btn-success"><i class="fa-regular fa-thumbs-up"></i></button>
-                            <button class="btn btn-danger"><i class="fa-regular fa-thumbs-down"></i></button>
+                            <button class="btn btn-success likebutton" onclick="likePost({{i["id"]}}, 1)">{%if i.liked == 0%}<i class="fa-regular fa-thumbs-up"></i>{%endif%}{%if i.liked == 1%}<i class="fa-solid fa-thumbs-up">{%endif%}</i></button>
+                            <button class="btn btn-danger likebutton" onclick="likePost({{i["id"]}}, -1)">{%if i.liked == 0%}<i class="fa-regular fa-thumbs-down"></i>{%endif%}{%if i.liked == -1%}<i class="fa-solid fa-thumbs-down"></i>{%endif%}</button>
                         </div>
                         <hr>
                     {%endfor%}
