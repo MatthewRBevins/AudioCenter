@@ -174,6 +174,11 @@ def editor():
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
+
+                    a = int(request.values.get('keystartPoint'))
+                    b = int(request.values.get('keyendPoint'))
+                    c = int(request.values.get('keytotalWidth'))
+                    print(a, b, c)
                     output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
                 elif request.values.get("amplify"):
