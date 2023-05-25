@@ -167,6 +167,10 @@ def editor():
             fileLength = AudioTools.length(session["filename"])
         elif request.values.get("form") == "2":
             if session["filename"] != None:
+                effectStart = int(request.values.get('effectsStartPoint'))
+                effectEnd = int(request.values.get('effectsEndPoint'))
+                effectWidth = int(request.values.get('effectsTotalWidth'))
+                
                 if request.values.get("key-change"):
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
@@ -175,12 +179,13 @@ def editor():
                     except:
                         pass
 
-                    a = int(request.values.get('keystartPoint'))
-                    b = int(request.values.get('keyendPoint'))
-                    c = int(request.values.get('keytotalWidth'))
-                    print(a, b, c)
-                    output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
-                    session["filename"] = output[0]
+                    if effectStart == 0 and effectEnd == 0 and effectWidth == 0:
+                        output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
+                        session["filename"] = output[0]
+                    else:
+                        AudioTools.makeCut(session["filename"], effectStart, effectEnd, effectWidth, 'key', steps)
+
+                    
                 elif request.values.get("amplify"):
                     factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
@@ -206,14 +211,18 @@ def editor():
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
-                    session["filename"] = output[0]
+                    if effectStart == 0 and effectEnd == 0 and effectWidth == 0:
+                        output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                        session["filename"] = output[0]
+                    else:
+                        AudioTools.makeCut(session["filename"], effectStart, effectEnd, effectWidth, 'speed', factor)
+                    
             else:
                 errors.append("You have not uploaded a file.")
         if request.values.get("hide") is not None:
             session["filename"] = ""
         if request.values.get("delete") is not None:
-            AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
+            AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')), 'delete')
     out["output"] = output
     return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
 

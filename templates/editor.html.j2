@@ -153,18 +153,17 @@
             <i class="glyphicon glyphicon-pause"></i>
             Stop
         </button>
-                <form method="POST" enctype="multipart/form-data" id="keyForm">
+                <form method="POST" enctype="multipart/form-data" id="keyForm" onsubmit="effectForms();">
                 <input type="hidden" name="form" value="2">
+                <input type="hidden" name="effectsTotalWidth" id="effectsTotalWidth" value="0">
+                <input type="hidden" name="effectsStartPoint" id="effectsStartPoint" value="0">
+                <input type="hidden" name="effectsEndPoint" id="effectsEndPoint" value="0">
                 <div class="modal fade" id="keyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                         <div class="modal-body">
                             <div id="hiddenKeyChange">
                                 <h5>Change Key</h5>
-                                <input type="hidden" name="keys" value="keys">
-                                <input type="hidden" name="totalWidth" id="keytotalWidth" value="0">
-                                <input type="hidden" name="startPoint" id="keystartPoint" value="0">
-                                <input type="hidden" name="endPoint" id="keyendPoint" value="0">
                                 <input type="range" name="steps" min="-10" max="10" step="1" oninput="document.getElementById('keyValue').innerHTML = this.value">
                                 <input id="clickme" class="show show2 btn btn-primary" onclick="alertModal(1.1*{{fileLength}} + 15); this.onclick=null; showBar(); hideBar(1.1*{{fileLength}} + 15);" type="submit" name="key-change" value="Change" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                 <br><h5>Half-Steps: <output id="keyValue">0</output></h5>
@@ -226,13 +225,12 @@
             $('#deleteForm').submit()
         })
 
-        $("key-change").on('click', () => {
-            $alert();
-            $('#keytotalWidth').val(totalWidth);
-            $('#keystartPoint').val(startCut);
-            $('#keyendPoint').val(endCut);
-            $('#keyForm').submit();
-        })
+        function effectForms() {
+            $('#effectsTotalWidth').val(totalWidth);
+            $('#effectsStartPoint').val(startCut);
+            $('#effectsEndPoint').val(endCut);
+            return true;
+        }
         
         var zoomLevel = 100
         $('#file-open').on('change', () => {
