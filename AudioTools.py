@@ -41,7 +41,7 @@ def trimSong(originalWavPath, newWavPath):
     trim = wavfile.write(newWavPath, sampleRate, waveData[0:endSample])
     return trim
 
-def makeCut(filepath, startpoint, endpoint, width):
+def makeCut(filepath, startpoint, endpoint, width, effect, steps=0):
     sound = AudioSegment.from_file(filepath)
     print(startpoint)
     print(endpoint)
@@ -53,7 +53,15 @@ def makeCut(filepath, startpoint, endpoint, width):
     print(startpoint)
     print(soundlength)
     print(startpoint*soundlength)
-    finishedcut = sound[:int(startpoint*soundlength)] + sound[int(endpoint*soundlength):]
+    selectedsound = sound[int(startpoint*soundlength):int(endpoint*soundlength)]
+    if effect == 'key':
+        selectedKeyChange = keyChange(selectedsound, None, steps)
+        finishedcut = sound[:int(startpoint*soundlength)] + selectedKeyChange + sound[int(endpoint*soundlength):]
+    elif effect == 'speed':
+        selectedSpeedChange = changeSpeed(selectedsound, None, steps)
+        finishedcut = sound[:int(startpoint*soundlength)] + selectedSpeedChange + sound[int(endpoint*soundlength):]
+    else:
+        finishedcut = sound[:int(startpoint*soundlength)] + sound[int(endpoint*soundlength):]
     finishedcut.export(filepath, format='wav')
     
 
@@ -63,15 +71,26 @@ def detectSong(file):
     return loop.run_until_complete(songDetectAsync(file))
 
 def keyChange(file, output, steps):
-    y, sr = librosa.load(file)
-    y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
-    os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    try:
-        os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    except:
-        pass
-    sf.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav", y_shifted, sr, 'PCM_24')
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"]
+    if isinstance(file, AudioSegment):
+        y, sr = audiosegment_to_ndarray(file)
+        y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+        y_shifted = np.array(y_shifted * (1<<15), dtype=np.int16)
+        audio_segment = AudioSegment(
+            y_shifted.tobytes(), 
+            frame_rate=sr,
+            sample_width=y_shifted.dtype.itemsize, 
+            channels=1
+        )
+        return audio_segment
+    else:
+        y, sr = librosa.load(file)
+        y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+        try:
+            os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+        except:
+            pass
+        sf.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav", y_shifted, sr, 'PCM_24')
+        return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"]
 
 def writeFrames(file, frames, output):
     samplerate = 48000
@@ -127,16 +146,28 @@ def split(file, output, stems):
 
 
 def changeSpeed(file, output, factor):
-    try:
-        os.makedirs(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    except:
-        pass
-    song, fs = librosa.load(file)
+    if isinstance(file, AudioSegment):
+        y, sr = audiosegment_to_ndarray(file)
+        changed = librosa.effects.time_stretch(y, factor)
+        changed = np.array(changed * (1<<15), dtype=np.int16)
+        audio_segment = AudioSegment(
+            changed.tobytes(), 
+            frame_rate=sr,
+            sample_width=changed.dtype.itemsize, 
+            channels=1
+        )
+        return audio_segment
+    else:
+        try:
+            os.makedirs(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+        except:
+            pass
+        song, fs = librosa.load(file)
 
-    changed = librosa.effects.time_stretch(song, factor)
+        changed = librosa.effects.time_stretch(song, factor)
 
-    wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
+        wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
+        return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
 
 def specGen(ratio, audio):
     wav_obj = wave.open(audio, 'rb')
@@ -153,3 +184,19 @@ def specGen(ratio, audio):
     plt.xlim(0, time)
     plt.colorbar()
     plt.show()
+    
+#convert audiosegment to librosa 
+# from https://groups.google.com/g/librosa/c/XWae4PdbXuk?pli=1   
+def audiosegment_to_ndarray(audiosegment):
+    samples = audiosegment.get_array_of_samples()
+    samples_float = librosa.util.buf_to_float(samples,n_bytes=2,
+                                      dtype=np.float32)
+    if audiosegment.channels==2:
+        sample_left= np.copy(samples_float[::2])
+        sample_right= np.copy(samples_float[1::2])
+        sample_all = np.array([sample_left,sample_right])
+    else:
+        sample_all = samples_float
+        
+        
+    return [sample_all,audiosegment.frame_rate]
