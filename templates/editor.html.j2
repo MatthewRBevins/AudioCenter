@@ -254,19 +254,26 @@
         })
         var wavesurfer = WaveSurfer.create({
             container: "#waveform",
-            waveColor: "violet",
-            progressColor: "purple",
+            waveColor: 'violet',
+            progressColor: 'blue',
+            backgroundColor: 'black',
+            responsive: 'true',
             plugins: [
-            WaveSurfer.playhead.create({
-                returnOnPause: true,
-                moveOnSeek: true,
-                draw: true
+            WaveSurfer.cursor.create({
+                showTime: true,
+                opacity: 1,
+                customShowTimeStyle: {
+                    'background-color': '#000',
+                    'color': '#fff',
+                    'padding': '2px',
+                    'font-size': '10px'
+                }
             }),
             WaveSurfer.spectrogram.create({
                 wavesurfer: wavesurfer,
-                container: "#spectogram",
+                container: "#spectrogram",
                 labels: true,
-                height: 256
+                height: 256,
             })
         ]
         });
