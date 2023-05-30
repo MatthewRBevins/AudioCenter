@@ -12067,4 +12067,13 @@ span.progress {
 
 #topbar {
   background-color: #74b2f4;
+}
+
+.post-visibility {
+  font-style: italic;
+}
+
+.post-body {
+  padding-left: 100px;
+  padding-right: 100px;
 }/*# sourceMappingURL=style.css.map */

@@ -88,15 +88,7 @@ def index():
     verifySessions()
     res = []
     if session["userData"]["loggedIn"]:
-        for i in session["userData"]["following"]:
-            userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
-            post = executeQuery("SELECT * FROM audiocenter_posts WHERE author_id=%s", (userID[0]["id"],))
-            for i in post:
-                liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
-                i["liked"] = 0
-                if len(liked) != 0:
-                    i["liked"] = liked[0]["like_or_dislike"]
-                res.append(i)
+        res = genPosts('following')
     return render_template('index.html.j2', userData=session["userData"], posts=res)
 
 @app.route('/detect', methods=["GET","POST"])
@@ -219,7 +211,7 @@ def editor():
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                     except:
                         pass
-                    executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility) VALUES(%s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis")))
+                    executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
                     AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                 elif request.values.get("split-tracks"):
                     out["type"] = "files"
@@ -372,6 +364,47 @@ def follow():
 
 @app.route('/like', methods=['POST'])
 def like():
+    diff = int(request.values.get("prev"))-int(request.values.get("likeOrDislike"))
+    likes = int(executeQuery("SELECT likes FROM audiocenter_posts WHERE id=%s")["likes"], (request.values.get("postID"),))
+    dislikes = int(executeQuery("SELECT dislikes FROM audiocenter_posts WHERE id=%s")["dislikes"], (request.values.get("postID"),))
+    if diff == 2:
+        dislikes += 1
+        likes -= 1
+    if diff == 1:
+        if int(request.values.get("prev")) == 0:
+            dislikes += 1
+        else:
+            dislikes -= 1
+    if diff == -1:
+        if int(request.values.get("prev")) == 0:
+            likes += 1
+        else:
+            likes -= 1
+    if diff == -2:
+        likes += 1
+        dislikes -= 1
+    executeQuery("UPDATE audiocenter_posts SET likes=%s,dislikes=%s WHERE id=%s", (likes, dislikes, request.values.get("postID")))
     executeQuery("DELETE FROM audiocenter_likes WHERE post_id=%s AND user_id=%s", (request.values.get("postID"), session["userData"]["id"]))
     executeQuery("INSERT INTO audiocenter_likes(user_id, post_id, like_or_dislike) VALUES(%s, %s, %s)", (session["userData"]["id"], request.values.get("postID"), request.values.get("likeOrDislike")))
     return 'success'
+
+@app.route('/genPosts', methods=['POST'])
+def genPosts(postType):
+    res = []
+    if postType == 'following':
+        for i in session["userData"]["following"]:
+            userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
+            post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
+            for i in post:
+                print(i)
+                print("*********")
+                print(i["id"])
+                liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
+                print(liked)
+                i["liked"] = 0
+                if len(liked) != 0:
+                    i["liked"] = liked[0]["like_or_dislike"]
+                res.append(i)
+    elif postType == 'trending':
+        res = []
+    return res
