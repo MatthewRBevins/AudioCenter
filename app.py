@@ -88,8 +88,8 @@ def index():
     verifySessions()
     res = []
     if session["userData"]["loggedIn"]:
-        res = genPosts('following')
-    return render_template('index.html.j2', userData=session["userData"], posts=res)
+        res = genPosts(request.values.get('posttype'))
+    return render_template('index.html.j2', userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
 
 @app.route('/detect', methods=["GET","POST"])
 def detect():
@@ -399,7 +399,7 @@ def like():
 @app.route('/genPosts', methods=['POST'])
 def genPosts(postType):
     res = []
-    if postType == 'following':
+    if postType == '0':
         for i in session["userData"]["following"]:
             userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
             post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
@@ -413,6 +413,16 @@ def genPosts(postType):
                 if len(liked) != 0:
                     i["liked"] = liked[0]["like_or_dislike"]
                 res.append(i)
-    elif postType == 'trending':
-        res = []
+    else:
+        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
+        for i in post:
+            print(i)
+            print("*********")
+            print(i["id"])
+            liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
+            print(liked)
+            i["liked"] = 0
+            if len(liked) != 0:
+                i["liked"] = liked[0]["like_or_dislike"]
+            res.append(i)
     return res
