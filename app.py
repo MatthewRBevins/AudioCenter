@@ -364,23 +364,31 @@ def follow():
 
 @app.route('/like', methods=['POST'])
 def like():
+    print("&&&&&&&&&&&&&&&")
+    print(request.values.get("postID"))
     diff = int(request.values.get("prev"))-int(request.values.get("likeOrDislike"))
-    likes = int(executeQuery("SELECT likes FROM audiocenter_posts WHERE id=%s")["likes"], (request.values.get("postID"),))
-    dislikes = int(executeQuery("SELECT dislikes FROM audiocenter_posts WHERE id=%s")["dislikes"], (request.values.get("postID"),))
+    likes = int(executeQuery("SELECT likes FROM audiocenter_posts WHERE id=%s", (request.values.get("postID"),))[0]["likes"])
+    dislikes = int(executeQuery("SELECT dislikes FROM audiocenter_posts WHERE id=%s", (request.values.get("postID"),))[0]["dislikes"])
     if diff == 2:
+        print("LIKE TO DISLIKE")
         dislikes += 1
         likes -= 1
     if diff == 1:
         if int(request.values.get("prev")) == 0:
+            print("NOTHING TO DISLIKE")
             dislikes += 1
         else:
-            dislikes -= 1
+            print("LIKE TO NOTHING")
+            likes -= 1
     if diff == -1:
         if int(request.values.get("prev")) == 0:
+            print("NOTHING TO LIKE")
             likes += 1
         else:
-            likes -= 1
+            print("DISLIKE TO NOTHING")
+            dislikes -= 1
     if diff == -2:
+        print("DISLIKE TO LIKE")
         likes += 1
         dislikes -= 1
     executeQuery("UPDATE audiocenter_posts SET likes=%s,dislikes=%s WHERE id=%s", (likes, dislikes, request.values.get("postID")))

@@ -16,7 +16,6 @@
                     <button class="btn btn-primary">For You</button><button class="btn btn-secondary">Trending</button>
                     {%for i in posts%}
                         <div class="post" id="post{{i.id}}">
-                            {{i}}
                             <h1 class="post-title">{{i.title}}</h1>
                             <h3 class="post-author"><a href="@{{i.username}}">{{i.username}}</a></h3>
                             <h5 class="post-time">Posted {{i.created_at}}</h5>
@@ -25,14 +24,14 @@
                             <audio src="{{i.filepath}}" controls></audio>
                             <br><br>
                             {%if i.liked == 1%}
-                            <button class="btn btn-success likebutton liked"><span class="like-icon"><i class="fa-solid fa-thumbs-up"></i></span> {{i.likes}}</button>
+                            <button class="btn btn-success likebutton liked"><span class="like-icon"><i class="fa-solid fa-thumbs-up"></i></span> <span class="count">{{i.likes}}</span></button>
                             {%else%}
-                            <button class="btn btn-success likebutton like"><span class="like-icon"><i class="fa-regular fa-thumbs-up"></i></span> {{i.likes}}</button>
+                            <button class="btn btn-success likebutton like"><span class="like-icon"><i class="fa-regular fa-thumbs-up"></i></span> <span class="count">{{i.likes}}</span></button>
                             {%endif%}
                             {%if i.liked == -1%}
-                            <button class="btn btn-danger likebutton disliked"><span class="like-icon"><i class="fa-solid fa-thumbs-down"></i></span> {{i.dislikes}}</button>
+                            <button class="btn btn-danger likebutton disliked"><span class="like-icon"><i class="fa-solid fa-thumbs-down"></i></span> <span class="count">{{i.dislikes}}</span></button>
                             {%else%}
-                            <button class="btn btn-danger likebutton dislike"><span class="like-icon"><i class="fa-regular fa-thumbs-down"></i></span> {{i.dislikes}}</button>
+                            <button class="btn btn-danger likebutton dislike"><span class="like-icon"><i class="fa-regular fa-thumbs-down"></i></span> <span class="count">{{i.dislikes}}</span></button>
                             {%endif%}
                         </div>
                         <hr>
@@ -48,6 +47,7 @@
                         let changed = false
                         if ($(this).hasClass('liked')) {
                             changed = true
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())-1)
                             $(this).removeClass('liked')
                             $(this).addClass('like')
                             $(this).children('.like-icon').html(`<i class="fa-regular fa-thumbs-up"></i>`)
@@ -55,13 +55,16 @@
                         }
                         if ($(this).hasClass('disliked')) {
                             changed = true
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())-1)
                             $(this).removeClass('disliked')
                             $(this).addClass('dislike')
                             $(this).children('.like-icon').html(`<i class="fa-regular fa-thumbs-down"></i>`)
                             prev = -1
                         }
                         if ($(this).hasClass('like') && !changed) {
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())+1)
                             if ($(this).parent().children('.disliked').length != 0) {
+                                $(this).parent().children('.disliked').children('.count').html(parseInt($(this).parent().children('.disliked').children('.count').html())-1)
                                 prev = -1
                             }
                             $(this).parent().children('.disliked').addClass('dislike')
@@ -73,7 +76,9 @@
                             likeOrDislike = 1
                         }
                         if ($(this).hasClass('dislike') && !changed) {
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())+1)
                             if ($(this).parent().children('.liked').length != 0) {
+                                $(this).parent().children('.liked').children('.count').html(parseInt($(this).parent().children('.liked').children('.count').html())-1)
                                 prev = 1
                             }
                             $(this).parent().children('.liked').addClass('like')
