@@ -22,7 +22,7 @@
             {%endif%}
         </label>
         {%if userToShowData.username == userData.username%}
-        <form method="POST" id="pfpform" enctype="multipart/form-data">
+        <form method="POST" id="pfpfoxrm" enctype="multipart/form-data">
             <input type="hidden" name="formnum" value="0">
             <input id="file-input" name="file-input" type="file" style="display:none"/><br><br>
         </form>
@@ -110,15 +110,15 @@
             </div>
         </div>
         <h5 class="text-light"><span class="spanbr"><button class="btn btn-default text-light" data-bs-toggle="modal" data-bs-target="#followersModal">{{userToShowData.followers|length}} Followers</button></span><span class="spanbr"><button class="btn btn-default text-light" data-bs-toggle="modal" data-bs-target="#followingModal">{{userToShowData.following|length}} Following</button></span></h5>
-        {%if userToShowData.username == userData.username%}
         <h1>{{userToShowData.username}}'s Audio:</h1>
         {% for file in files %}
-            <h3><a href="{{file}}" download>{{file}}</a></h3>
-            <a target="_blank" href="https://twitter.com/intent/tweet?text=Check out my AudioCenter creation: https://audio.center/{{file}}" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-            <button class="btn btn-primary" onclick="navigator.clipboard.writeText('audio.center/{{file}}'); alert('Copied link!')">Copy Link</button>
-            <br><br>
+            {%if file.vis != 'private'%}
+                <h3><a href="{{file}}" download>{{file}}</a></h3>
+                <a target="_blank" href="https://twitter.com/intent/tweet?text=Check out my AudioCenter creation: https://audio.center/{{file}}" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                <button class="btn btn-primary" onclick="navigator.clipboard.writeText('audio.center/{{file}}'); alert('Copied link!')">Copy Link</button>
+                <br><br>
+            {%endif%}
         {% endfor %}
-        {%endif%}
     </div>
 </div>
 {%if userToShowData.username == userData.username%}
@@ -163,8 +163,8 @@
         $.ajax({
             type: "POST",
             url: "/follow",
-            cache: false,
             data: fd,
+            cache: false,
             processData: false,
             contentType: false,
             success: function(result) {
@@ -178,5 +178,4 @@
 </script>
 {%endif%}
 </div>
-<br><br>
 {% endblock %}

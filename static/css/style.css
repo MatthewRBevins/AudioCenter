@@ -11741,7 +11741,6 @@ body {
   height: 100%;
   top: 0;
   overflow-x: hidden;
-  overflow-y: hidden;
 }
 
 .allowover {
@@ -12064,4 +12063,17 @@ span.progress {
 
 .maintext {
   font-size: 90px;
+}
+
+#topbar {
+  background-color: #74b2f4;
+}
+
+.post-visibility {
+  font-style: italic;
+}
+
+.post-body {
+  padding-left: 100px;
+  padding-right: 100px;
 }/*# sourceMappingURL=style.css.map */

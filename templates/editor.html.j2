@@ -66,8 +66,9 @@
                                         <input type="file" id="file-open" name="file-open" style="display:none">
                                     </form>
                                     {%for i in out['output']%}
-                                    <a class="dropdown-item" href="{{i}}" download>Save</a>
+                                    <a class="dropdown-item" href="{{i}}" download>Download Track {{loop.index}}</a>
                                     {%endfor%}
+                                    <label id="clickme" class="dropdown-item show show2 btn" data-bs-toggle="modal" data-bs-target="#saveToProfileModal">Save to Profile</label>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
@@ -143,7 +144,7 @@
                         </div>
                         </div>
                     </div>
-                    </div>
+                </div>
                 <div id="waveform"></div>
                 <div id="spectogram"></div>
                 <button class="btn btn-primary" onclick="wavesurfer.playPause()">
@@ -196,6 +197,32 @@
                     </div>
 
 
+                    <div class="modal fade" id="saveToProfileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-body">
+                            <h5>Save Audio to Profile</h5>
+                            <form method="POST">
+                                <label>Post Name</label><br>
+                                <input required maxlength="20" type="text" name="posttitle"><br>
+                                <label>Post Body</label><br>
+                                <textarea required name="postbody"></textarea><br>
+                                <label>Private</label>
+                                <input checked type="radio" required name="vis" value="private"><br>
+                                <label>Followers Only</label>
+                                <input type="radio" required name="vis" value="followers"><br>
+                                <label>Public</label>
+                                <input type="radio" required name="vis" value="public"><br>
+                                <input class="btn btn-primary" type="submit" name="savepost" value="Save">
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
                     <div class="modal fade" id="ampModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -238,19 +265,26 @@
         })
         var wavesurfer = WaveSurfer.create({
             container: "#waveform",
-            waveColor: "violet",
-            progressColor: "purple",
+            waveColor: 'violet',
+            progressColor: 'blue',
+            backgroundColor: 'black',
+            responsive: 'true',
             plugins: [
-            WaveSurfer.playhead.create({
-                returnOnPause: true,
-                moveOnSeek: true,
-                draw: true
+            WaveSurfer.cursor.create({
+                showTime: true,
+                opacity: 1,
+                customShowTimeStyle: {
+                    'background-color': '#000',
+                    'color': '#fff',
+                    'padding': '2px',
+                    'font-size': '10px'
+                }
             }),
             WaveSurfer.spectrogram.create({
                 wavesurfer: wavesurfer,
-                container: "#spectogram",
+                container: "#spectrogram",
                 labels: true,
-                height: 256
+                height: 256,
             })
         ]
         });
@@ -267,7 +301,7 @@
             let a = document.getElementById("spectogram")
             let b = a.getElementsByTagName("canvas")
             for (let i of b) {
-                i.style.marginLeft = '-960px';
+                i.style.marginLeft = '-' + window.innerWidth/2 + 'px';
             }
         }, 100)
 
