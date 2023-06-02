@@ -9,8 +9,106 @@
         <br><br><br>
         <div id="bgtext">
             <div class="fadein">
-                <br><br><br><br><br><br>
-                <p class="maintext">Audio Center</p>
+                {%if userData["loggedIn"]%}
+                <h1 class="maintext">Home</h1>
+                <div id="posts" class="bg-dark">
+                    <br>
+                    <a href="?posttype=0"><button class="btn {%if posttype=='0'%}btn-primary{%else%}btn-secondary{%endif%}">For You</button></a><a href="?posttype=1"><button class="btn {%if posttype=='0'%}btn-secondary{%else%}btn-primary{%endif%}">Trending</button></a>
+                    {%for i in posts%}
+                        <div class="post" id="post{{i.id}}">
+                            <h1 class="post-title">{{i.title}}</h1>
+                            <h3 class="post-author"><a href="@{{i.username}}">{{i.username}}</a></h3>
+                            <h5 class="post-time">Posted {{i.created_at}}</h5>
+                            <p class="post-visibility text-success">{{i.visibility}}</p>
+                            <p class="post-body">{{i.body}}</p>
+                            <audio src="{{i.filepath}}" controls></audio>
+                            <br><br>
+                            {%if i.liked == 1%}
+                            <button class="btn btn-success likebutton liked"><span class="like-icon"><i class="fa-solid fa-thumbs-up"></i></span> <span class="count">{{i.likes}}</span></button>
+                            {%else%}
+                            <button class="btn btn-success likebutton like"><span class="like-icon"><i class="fa-regular fa-thumbs-up"></i></span> <span class="count">{{i.likes}}</span></button>
+                            {%endif%}
+                            {%if i.liked == -1%}
+                            <button class="btn btn-danger likebutton disliked"><span class="like-icon"><i class="fa-solid fa-thumbs-down"></i></span> <span class="count">{{i.dislikes}}</span></button>
+                            {%else%}
+                            <button class="btn btn-danger likebutton dislike"><span class="like-icon"><i class="fa-regular fa-thumbs-down"></i></span> <span class="count">{{i.dislikes}}</span></button>
+                            {%endif%}
+                        </div>
+                        <hr>
+                    {%endfor%}
+                </div>
+                {%else%}
+                <h1 class="maintext">Audio Center</h1>
+                {%endif%}
+                <script>
+                    $('.likebutton').on('click', function() {
+                        let likeOrDislike = 0
+                        let prev = 0
+                        let changed = false
+                        if ($(this).hasClass('liked')) {
+                            changed = true
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())-1)
+                            $(this).removeClass('liked')
+                            $(this).addClass('like')
+                            $(this).children('.like-icon').html(`<i class="fa-regular fa-thumbs-up"></i>`)
+                            prev = 1
+                        }
+                        if ($(this).hasClass('disliked')) {
+                            changed = true
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())-1)
+                            $(this).removeClass('disliked')
+                            $(this).addClass('dislike')
+                            $(this).children('.like-icon').html(`<i class="fa-regular fa-thumbs-down"></i>`)
+                            prev = -1
+                        }
+                        if ($(this).hasClass('like') && !changed) {
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())+1)
+                            if ($(this).parent().children('.disliked').length != 0) {
+                                $(this).parent().children('.disliked').children('.count').html(parseInt($(this).parent().children('.disliked').children('.count').html())-1)
+                                prev = -1
+                            }
+                            $(this).parent().children('.disliked').addClass('dislike')
+                            $(this).parent().children('.disliked').children('.like-icon').html(`<i class="fa-regular fa-thumbs-down"></i>`)
+                            $(this).parent().children('.disliked').removeClass('disliked')
+                            $(this).removeClass('like')
+                            $(this).addClass('liked')
+                            $(this).children('.like-icon').html(`<i class="fa-solid fa-thumbs-up"></i>`)
+                            likeOrDislike = 1
+                        }
+                        if ($(this).hasClass('dislike') && !changed) {
+                            $(this).children('.count').html(parseInt($(this).children('.count').html())+1)
+                            if ($(this).parent().children('.liked').length != 0) {
+                                $(this).parent().children('.liked').children('.count').html(parseInt($(this).parent().children('.liked').children('.count').html())-1)
+                                prev = 1
+                            }
+                            $(this).parent().children('.liked').addClass('like')
+                            $(this).parent().children('.liked').children('.like-icon').html(`<i class="fa-regular fa-thumbs-up"></i>`)
+                            $(this).parent().children('.liked').removeClass('liked')
+                            $(this).removeClass('dislike')
+                            $(this).addClass('disliked')
+                            $(this).children('.like-icon').html(`<i class="fa-solid fa-thumbs-down"></i>`)
+                            likeOrDislike = -1
+                        }
+                        let fd = new FormData()
+                        fd.append("likeOrDislike", likeOrDislike)
+                        fd.append("prev", prev)
+                        fd.append("postID", $(this).parent().attr('id').replace("post",""))
+                        $.ajax({
+                            type: "POST",
+                            url: "/like",
+                            data: fd,
+                            cache: false,
+                            processData: false,
+                            contentType: false,
+                            success: function(result) {
+                                console.log(result)
+                            },
+                            error: function(result) {
+                                console.log(result)
+                            }
+                        })  
+                    })
+                </script>
             </div>
         </div>
     </div>
