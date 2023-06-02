@@ -9,12 +9,17 @@
         <br>
         <div class="fadein smtext" id="plain">
             <br>
+            <div class="error">
+                <p>{{error}}</p>
+            </div>
             <h1>Sign Up</h1>
             <form method="POST" action="signup"> 
-                Username: <br>
-                <input type="text" name="username" value="" required> <br> <br>
-                Password: <br> 
-                <input type="password" name="paswd" value="" required> <br> <br>
+                *Username: <br>
+                <input type="text" name="username" value="" minlength="1" required> <br> <br>
+                *Password: <br> 
+                <input type="password" name="paswd" value="" minlength="8" required> <br> <br>
+                *Confirm Password: <br> 
+                <input type="password" name="confpaswd" value="" minlength="8" required> <br> <br>
                 <input type="submit" value="Sign Up">
             </form>
             <br> 

@@ -7,9 +7,16 @@
 {% block body %}        
         <br><br><br>
         <div id="bgtext">
+            <br>
+            <div class="error">
+                <p>{{error}}</p>
+            </div>
+            {%if out.type == "convert"%}
+                <h3>Download: <a href="{{out.output}}" download>{{base}}</a></h3>
+            {%endif%}
+            <h5><i><a href="https://ffmpeg.org/ffmpeg-formats.html" target="_blank">List of Supported Formats <i class="fa-solid fa-arrow-up-right-from-square"></i></a></i></h5>
             <form method="POST" id="detectForm" enctype="multipart/form-data">
                 <input style="display:none" type="file" id="fileInput" name="file"/>
-                <h3 class="convertOptions">Detected Type: MP3</h3>
                 <select class="convertOptions">
                     <option>Convert to WAV</option>
                 </select>
@@ -19,9 +26,6 @@
                 <h1>Convert Audio Files</h1>
                 <h3><i>Drag and drop an audio file here</i></h3>
             </div>
-            {%if out.type == "convert"%}
-                    <h3>Download: <a href="{{out.output}}" download>{{base}}</a></h3>
-                {%endif%}
         </div>
     </div>
     <script>

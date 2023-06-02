@@ -1,0 +1,25 @@
+*ROUTES*
+
+Route 346: https://kingcounty.gov/en/dept/metro/routes-and-service/schedules-and-maps/346
+
+Route 345: https://kingcounty.gov/en/dept/metro/routes-and-service/schedules-and-maps/345
+
+1 Line: https://www.soundtransit.org/ride-with-us/routes-schedules/1-line?at=1683907173609&direction=1&start_stop=null&view=point-to-point&route_tab=schedule&stops_0=1_990005%2C1_99913&stops_1=1_99605%2C1_990006
+
+Route 556: https://www.soundtransit.org/ride-with-us/routes-schedules/556?at=1683907049374&direction=0&start_stop=null&view=point-to-point&route_tab=schedule&stops_0=1_67019%2C1_25755&stops_1=1_10912%2C1_64566
+
+*TO LAKESIDE*
+
+Route 556 from 6:30 (Eastgate Freeway Station) - 7:04 (Montlake & Pacific Pl)
+
+Light Rail from 7:10 (Univ of Wash Station) - 7:19 (Northgate Station)
+
+Route 346 from 7:23 (Northgate Station) - 7:32 (130th and Meridian)
+
+*TO HOME*
+
+Route 345 from 4:15 (130th and Meridian) - 4:37 (Northgate Station)
+
+Light Rail from 4:37 (Northgate Station) - 4:46 (Univ of Wash Station)
+
+Route 556 from 4:53 (Montlake & Pacific Pl) - 5:35 (Eastgate Freeway Station)

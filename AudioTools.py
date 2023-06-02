@@ -21,8 +21,8 @@ def saveFile(file, output):
 
 def mp3towav(file):
     output = os.path.splitext(file)[0] + ".wav"
-    subprocess.call(['ffmpeg', '-i', file, output])
-    return output
+    err = subprocess.call(['ffmpeg', '-i', file, output])
+    return (output, err)
 
 async def songDetectAsync(file):
     shazam = Shazam()
