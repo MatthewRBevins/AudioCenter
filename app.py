@@ -96,7 +96,7 @@ def detect():
     verifySessions()
     output = None
     out = dict() 
-    errors = []
+    error = ''
     if request.method == "POST":
         print("HI")
         f = request.files["file"]
@@ -116,25 +116,31 @@ def detect():
             pass
         trimmedFilename = 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
         proxy = open(trimmedFilename, "w")
-        AudioTools.trimSong(session["filename"], trimmedFilename)
+        try:
+            AudioTools.trimSong(session["filename"], trimmedFilename)
+        except:
+            error = 'Oops! File format not supported.'
         session["filename"] = trimmedFilename
-        output = AudioTools.detectSong(session["filename"])
+        try:
+            output = AudioTools.detectSong(session["filename"])
+        except:
+            error = 'Oops! File format not supported.'
         out["type"] = "detect"
         session["filename"] = originalFilename
         out["output"] = output
-        if output == None:
-            errors = ['Song not detected.']
-    return render_template('detect.html.j2', fn=session["filename"], userData=session["userData"], out=out, errors=errors)
+        if output == None and error == '':
+            error = 'Oops! Song not detected.'
+    return render_template('detect.html.j2', fn=session["filename"], userData=session["userData"], out=out, error=error)
 
 @app.route('/convert', methods=["GET","POST"])
 def convert():
     verifySessions()
     output = None
     out = dict() 
-    errors = []
     basename = ""
-    if request.method == "POST":
-        print("HI")                         
+    error = ''
+    validExtensions = ["m4a", "mp3"]
+    if request.method == "POST":                        
         f = request.files["file"]
         extension = os.path.splitext(f.filename)[1].lower()
         print(extension)
@@ -151,12 +157,17 @@ def convert():
         session["filename"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
-            out["output"] = AudioTools.mp3towav(session["filename"])
+            converted = AudioTools.mp3towav(session["filename"])
+            if converted[1] == 1:
+                error = 'Oops! File format not supported.'
+                out["output"] = session["filename"]
+            else:
+                out["output"] = converted[0]
         else:
             out["output"] = session["filename"]
         basename = os.path.basename(out["output"])
         
-    return render_template('convert.html.j2', fn=session["filename"], userData=session["userData"], out=out, base=basename)
+    return render_template('convert.html.j2', error=error, fn=session["filename"], userData=session["userData"], out=out, base=basename)
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
@@ -308,14 +319,25 @@ def profile():
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
 def signup(): 
+    error = ''
     verifySessions()
     if request.method=="GET": 
         return render_template("signup.html.j2", userData=session["userData"]) 
     else: 
         #I am not doing server-side validation for the username and password because the request.values.get always returns a string, which can be hashed
         #If the user really wants to put their password as a color, that's fine
-        username=request.values.get("username")
-        paswd=request.values.get("paswd") 
+        username = request.values.get("username")
+        paswd = request.values.get("paswd") 
+        conf = request.values.get("confpaswd")
+        if username == "" or paswd == "" or conf == "":
+            error = 'Oops! Please fill in all fields.'
+            return render_template("signup.html.j2", error=error, userData=session["userData"])
+        if len(paswd) < 8:
+            error = 'Oops! Password must be at least 8 characters.'
+            return render_template("signup.html.j2", error=error, userData=session["userData"])
+        if paswd != conf:
+            error = 'Oops! Password must match confirmation.'
+            return render_template("signup.html.j2", error=error, userData=session["userData"])
         paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
         data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (username,))
         if len(data)==0:
@@ -326,8 +348,8 @@ def signup():
             executeQuery("INSERT INTO audiocenter_users(joined, username, password, bio, place, website) VALUES (%s, %s, %s, %s, %s, %s);", (date, username, paswdsha, "This user has not added a bio yet.", "Earth", ""))
             return redirect(url_for("login"))
         else:
-            data = executeQuery("SELECT * FROM audiocenter_users", ())
-            return render_template("signup.html.j2", invalid=True, userData=session["userData"])
+            error = 'Oops! That username has been taken.'
+            return render_template("signup.html.j2", error=error, userData=session["userData"])
 
 @app.route('/@<userToShow>', methods = ["GET"])
 def userShow(userToShow):

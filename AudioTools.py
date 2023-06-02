@@ -7,6 +7,7 @@ import soundfile as sf
 import asyncio
 from shazamio import Shazam, Serialize
 import time
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -67,15 +68,20 @@ def detectSong(file):
     return loop.run_until_complete(songDetectAsync(file))
 
 def keyChange(file, output, steps):
+    pathFound = False
     y, sr = librosa.load(file)
     y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
-    os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    try:
-        os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    except:
-        pass
-    sf.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav", y_shifted, sr, 'PCM_24')
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"]
+    if (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "keychange") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "amplify") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "speedChange"): 
+        path = output+file.split("/")[len(file.split("/"))-1].split(".w")[0]
+    else:
+        path = output+file.split("/")[len(file.split("/"))-2]+"1"
+    if os.path.exists(path):
+        pathFound = True 
+    if pathFound: 
+        shutil.rmtree(path)
+    os.mkdir(path)
+    sf.write(path+"/keychange.wav", y_shifted, sr, 'PCM_24')
+    return [path+"/keychange.wav"]
 
 def writeFrames(file, frames, output):
     samplerate = 48000
@@ -98,20 +104,37 @@ def length(file):
         rate = f.getframerate()
         duration = frames / float(rate)
         return duration 
+    
+def float2pcm(sig, dtype='int16'): 
+    sig = np.asarray(sig) 
+    dtype = np.dtype(dtype)
+    i = np.iinfo(dtype)
+    abs_max = 2 ** (i.bits - 1)
+    offset = i.min + abs_max
+    return (sig * abs_max + offset).clip(i.min, i.max).astype(dtype)
 
 def amplify(file, output, factor): 
+    pathFound = False
     factor = factor #Adjust volume by factor
+    print("Hi " + file.split("/")[len(file.split("/"))-1].split(".w")[0])
+    print(file)
+    prospectPath = file.split("/")[len(file.split("/"))-1].split(".w")[0]
+    if (prospectPath != "amplify") and (prospectPath != "keychange") and (prospectPath != "speedChange"): 
+        path = output+prospectPath
+    else:
+        path = output+file.split("/")[len(file.split("/"))-2]+"1"
     with wave.open(file, 'rb') as wav:
         p = wav.getparams()
-        try:
-            os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-        except:
-            pass
-        with wave.open(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/amplify.wav', 'wb') as audio:
+        if os.path.exists(path):
+            pathFound = True 
+        if pathFound: 
+            shutil.rmtree(path)
+        os.mkdir(path)
+        with wave.open(path+'/amplify.wav', 'wb') as audio:
             audio.setparams(p)
             frames = wav.readframes(p.nframes)
             audio.writeframesraw(audioop.mul(frames, p.sampwidth, factor))
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/amplify.wav']
+    return [path+'/amplify.wav']
 
 def combine(sound1, sound2): 
     audiosound1 = AudioSegment.from_wav(sound1)
@@ -131,16 +154,24 @@ def split(file, output, stems):
 
 
 def changeSpeed(file, output, factor):
-    try:
-        os.makedirs(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
-    except:
-        pass
+    pathFound = False
+    prospectPath = file.split("/")[len(file.split("/"))-1].split(".w")[0]
+    if (prospectPath != "amplify") and (prospectPath != "keychange") and (prospectPath != "speedChange"): 
+        path = output+prospectPath
+    else:
+        path = output+file.split("/")[len(file.split("/"))-2]+"1"
+    if os.path.exists(path):
+        pathFound = True 
+    if pathFound: 
+        shutil.rmtree(path)
+    os.mkdir(path)
     song, fs = librosa.load(file)
 
     changed = librosa.effects.time_stretch(song, factor)
-
-    wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
+    print(changed)
+    print(changed.astype(np.float16))
+    wavfile.write(path+"/speedChange.wav", fs, float2pcm(changed)) # save the song 
+    return [path+'/speedChange.wav']
 
 def specGen(ratio, audio):
     wav_obj = wave.open(audio, 'rb')
