@@ -87,9 +87,12 @@ def verifySessions():
 def index():
     verifySessions()
     res = []
+    spinoff = False
     if session["userData"]["loggedIn"]:
         res = genPosts(request.values.get('posttype'))
-    return render_template('index.html.j2', userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
+        if len(res) > 1: 
+            spinoff = True
+    return render_template('index.html.j2', spinoff=spinoff, userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
 
 @app.route('/detect', methods=["GET","POST"])
 def detect():
@@ -172,6 +175,7 @@ def convert():
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     verifySessions()
+    print("Checkpoint 1")
     fileLength = 0
     try:
         output = [session["filename"]]
@@ -181,6 +185,7 @@ def editor():
         pass
     errors = []
     if request.method == "POST":
+        print("Checkpoint 2")
         if request.values.get("form") == "1":
             f = request.files["file-open"]
             t = str(int(time.time()))   
@@ -191,10 +196,15 @@ def editor():
             filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
             session["filename"] = filename
-            fileLength = AudioTools.length(session["filename"])
+            try:
+                fileLength = AudioTools.length(session["filename"])
+            except:
+                errors.append("Oops! You uploaded an invalid file.")
+                session["filename"] = ""
         elif request.values.get("form") == "2":
+            print("Checkpoint 3")
             if session["filename"] != None:
-                if request.values.get("key-change"):
+                if request.values.get("type") == "KEYCHANGE":
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     try:
@@ -203,7 +213,8 @@ def editor():
                         pass
                     output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
-                elif request.values.get("amplify"):
+                    return output[0]
+                elif request.values.get("type") == "AMPLIFY":
                     factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
                     out["type"] = "files"
@@ -213,18 +224,30 @@ def editor():
                         pass
                     output = AudioTools.amplify(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
+                    return output[0]
                 elif request.values.get("savepost"):
-                    try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
-                    except:
-                        pass
-                    try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
-                    except:
-                        pass
-                    executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                    AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
-                elif request.values.get("split-tracks"):
+                    print("Checkpoint 4")
+                    invalidChars = ["#", "%", "&", "{", "}", "\\", "<", ">", "*", "?", "/", "$", "!", "\'", "\"", ":", "@", "+", "`", "|", "="]
+                    title = request.values.get("posttitle")
+                    if any(char in title for char in invalidChars): 
+                        errors.append("Oops! You've put an invalid character in your post title.")
+                    elif len(title) == 0: 
+                        errors.append("Oops! Post has no title.")
+                    else:
+                        try:
+                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
+                        except:
+                            pass
+                        try:
+                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                        except:
+                            pass
+                        if session["userData"]["username"] == "guest": 
+                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
+                        else: 
+                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
+                        AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                elif request.values.get("type") == "SPLIT":
                     out["type"] = "files"
                     try:
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
@@ -232,7 +255,8 @@ def editor():
                         pass
                     output = AudioTools.split(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
                     session["filename"] = output[0]
-                elif request.values.get("speed-change"):
+                    return output[0]
+                elif request.values.get("type") == "SPEEDCHANGE":
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
                     try:
@@ -241,6 +265,7 @@ def editor():
                         pass
                     output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
+                    return output[0]
             else:
                 errors.append("You have not uploaded a file.")
         if request.values.get("hide") is not None:
@@ -340,7 +365,7 @@ def signup():
             return render_template("signup.html.j2", error=error, userData=session["userData"])
         paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
         data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (username,))
-        if len(data)==0:
+        if len(data)==0 and username != "guest":
             paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
             date = datetime.datetime.now()
             date = date.strftime("%B %Y")

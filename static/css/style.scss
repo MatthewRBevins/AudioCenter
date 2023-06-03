@@ -22,6 +22,7 @@ body
     height:100%;
     top:0;
     overflow-x:hidden;
+    overflow-y:hidden;
 }
 
 .allowover
@@ -60,6 +61,20 @@ form
     color:rgb(116, 178, 244);
     position:relative;
     height:100%;
+    width:173%;
+    margin-left:-37%;
+}
+
+.bgspinoff
+{
+    /* All background images from https://www.shutterstock.com/search/fractal */
+    background-image:url("/static/images/DarkAudioWaves.png");
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:cover; 
+    background-attachment:fixed;
+    color:rgb(116, 178, 244);
+    position:relative;
     width:173%;
     margin-left:-37%;
 }
@@ -373,11 +388,31 @@ label:hover {
 .maintext {
     font-size: 90px;
 }
- 
-#topbar {
+
+.topbar {
     background-color: #74b2f4;
 }
 
-.post-visibility {
-    font-style: italic;
+.topbar:hover {
+    transition:background-color 1s;
+    background-color: #ffffff; 
+}
+
+.topbar:not(:hover) {
+    transition:background-color 1s;
+    background-color: #74b2f4; 
+}
+
+.nocenter
+{
+    text-align:left;
+}
+
+.post {
+    width:50%;
+    margin-left:25%;
+}
+
+.noover {
+    overflow-y:hidden;
 }

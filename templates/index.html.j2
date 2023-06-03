@@ -4,14 +4,19 @@
         <title>Audio Center</title>
 {% endblock %}
 
-{% block body %}        
+{% block body %}
+    {% if not spinoff %}        
     <div class="bg">
+    {% else %}
+    <div class="allowover">
+    <div class="bgspinoff">
+    {% endif %}
         <br><br><br>
         <div id="bgtext">
             <div class="fadein">
                 {%if userData["loggedIn"]%}
                 <h1 class="maintext">Home</h1>
-                <div id="posts" class="bg-dark">
+                <div id="posts" class="bg-dark bg-opacity-75">
                     <br>
                     <a href="?posttype=0"><button class="btn {%if posttype=='0'%}btn-primary{%else%}btn-secondary{%endif%}">For You</button></a><a href="?posttype=1"><button class="btn {%if posttype=='0'%}btn-secondary{%else%}btn-primary{%endif%}">Trending</button></a>
                     {%for i in posts%}
@@ -36,6 +41,8 @@
                         </div>
                         <hr>
                     {%endfor%}
+                    <br> <br> <br>
+                    <br> <br> 
                 </div>
                 {%else%}
                 <h1 class="maintext">Audio Center</h1>
@@ -112,4 +119,5 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

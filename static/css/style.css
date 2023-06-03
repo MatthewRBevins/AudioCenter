@@ -11778,6 +11778,19 @@ form {
   margin-left: -37%;
 }
 
+.bgspinoff {
+  /* All background images from https://www.shutterstock.com/search/fractal */
+  background-image: url("/static/images/DarkAudioWaves.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  color: rgb(116, 178, 244);
+  position: relative;
+  width: 173%;
+  margin-left: -37%;
+}
+
 .bgprofile {
   height: 100%;
   background-image: url("/static/images/LoginBackground.png");
@@ -12082,4 +12095,13 @@ span.progress {
 
 .nocenter {
   text-align: left;
+}
+
+.post {
+  width: 50%;
+  margin-left: 25%;
+}
+
+.noover {
+  overflow-y: hidden;
 }/*# sourceMappingURL=style.css.map */

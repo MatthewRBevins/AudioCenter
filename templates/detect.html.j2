@@ -12,8 +12,8 @@
     <div class="error">
         <p>{{error}}</p>
     </div>
-    <button id="clickme" class="show show2 btn btn-primary" onclick="alertModal(50); this.onclick=null; showBar(); hideBar(50);" data-bs-toggle="modal" data-bs-target="#exampleModal" style="display:none">Split</button>
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <button id="clickme" class="show show2 btn btn-primary" onclick="alertModal(50); this.onclick=null; showBar(); hideBar(50);" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-backdrop="static" data-bs-keyboard="false" style="display:none">Split</button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                         <div class="modal-body">
@@ -21,12 +21,6 @@
                             <div id="bar2" class="progressbar" style="">
                                 <span class="progress"></span>
                             </div>
-                            <div id="text" style="display:none">
-                                <p>All done!</p>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                         </div>
                     </div>
