@@ -195,7 +195,7 @@ def editor():
                     except:
                         pass
 
-                    if effectStart == 0 and effectEnd == 0 and effectWidth == 0:
+                    if effectWidth == 0:
                         output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                         session["filename"] = output[0]
                     else:
@@ -238,7 +238,7 @@ def editor():
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    if effectStart == 0 and effectEnd == 0 and effectWidth == 0:
+                    if effectWidth == 0:
                         output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                         session["filename"] = output[0]
                     else:
