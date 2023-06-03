@@ -104,7 +104,8 @@ def length(file):
         rate = f.getframerate()
         duration = frames / float(rate)
         return duration 
-    
+
+#Function from https://stackoverflow.com/questions/60352850/wave-error-unknown-format-3-arises-when-trying-to-convert-a-wav-file-into-text
 def float2pcm(sig, dtype='int16'): 
     sig = np.asarray(sig) 
     dtype = np.dtype(dtype)
