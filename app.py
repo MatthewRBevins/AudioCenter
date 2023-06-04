@@ -23,6 +23,11 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.secret_key = "secret"
 mysql = MySQL(app) 
 
+server = False #Change to true when it's time to upload to the server
+serverPath = ""
+if server:
+    serverPath = "./public/AudioCenter/AudioCenter/"
+
 def executeQuery(query, queryVars):
     print(query, queryVars)
     #Initialize database connection
@@ -70,7 +75,7 @@ def getPosts(currentUser, userToShow):
     return data
 
 def verifySessions():
-    print("VERIFY SESSIONS")
+    #print("VERIFY SESSIONS")
     #Update this when adding new session vars
     #session["userData"]["loggedIn"] = True
     try:
@@ -101,23 +106,23 @@ def detect():
     out = dict() 
     error = ''
     if request.method == "POST":
-        print("HI")
+        #print("HI")
         f = request.files["file"]
         t = str(int(time.time()))   
         try:
-            os.mkdir('static/audio/' + session["userData"]["username"] + '/detect')
+            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/detect')
         except:
             pass
-        filename = 'static/audio/' + session["userData"]["username"] + '/detect/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+        filename = serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
         f.save(filename) 
         session["filename"] = filename
         originalFilename = session["filename"] 
         t = str(int(time.time()))
         try:
-            os.mkdir('static/audio/' + session["userData"]["username"] + '/detect/trimmed/')
+            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/')
         except:
             pass
-        trimmedFilename = 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
+        trimmedFilename = serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
         proxy = open(trimmedFilename, "w")
         try:
             AudioTools.trimSong(session["filename"], trimmedFilename)
@@ -149,10 +154,10 @@ def convert():
         print(extension)
         t = str(int(time.time()))   
         try:
-            os.mkdir('static/audio/' + session["userData"]["username"] + '/convert')
+            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/convert')
         except:
             pass
-        filename = 'static/audio/' + session["userData"]["username"] + '/convert/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+        filename = serverPath + 'static/audio/' + session["userData"]["username"] + '/convert/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
         try:
             f.save(filename) 
         except:
@@ -190,10 +195,10 @@ def editor():
             f = request.files["file-open"]
             t = str(int(time.time()))   
             try:
-                os.mkdir('static/audio/' + session["userData"]["username"] + '/raw')
+                os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/raw')
             except:
                 pass
-            filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+            filename = serverPath + 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
             session["filename"] = filename
             try:
@@ -208,10 +213,10 @@ def editor():
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
+                    output = AudioTools.keyChange(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("type") == "AMPLIFY":
@@ -219,10 +224,10 @@ def editor():
                     print("****************AMPLIFY")
                     out["type"] = "files"
                     try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.amplify(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                    output = AudioTools.amplify(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("savepost"):
@@ -235,35 +240,35 @@ def editor():
                         errors.append("Oops! Post has no title.")
                     else:
                         try:
-                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
+                            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/save')
                         except:
                             pass
                         try:
-                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                         except:
                             pass
                         if session["userData"]["username"] == "guest": 
-                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
+                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
                         else: 
-                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                        AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
+                        AudioTools.saveFile(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                 elif request.values.get("type") == "SPLIT":
                     out["type"] = "files"
                     try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.split(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
+                    output = AudioTools.split(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', 2)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("type") == "SPEEDCHANGE":
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
                     try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                    output = AudioTools.changeSpeed(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                     return output[0]
             else:
@@ -303,10 +308,10 @@ def profile():
         if request.values.get("formnum") == "0":
             f = request.files["file-input"]
             try:
-                os.mkdir('static/images/pfps/' + session["userData"]["username"])
+                os.mkdir(serverPath + 'static/images/pfps/' + session["userData"]["username"])
             except:
                 pass
-            filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
+            filename = serverPath + 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
             f.save(filename)
             executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
         elif request.values.get("formnum") == "1":
@@ -330,7 +335,7 @@ def profile():
     session["userData"] = userData(session["userData"]["username"], True).createDict()
     res = []
     spinoff = True
-    dir_path = 'static/audio/' + session["userData"]["username"] + '/save'
+    dir_path = serverPath + 'static/audio/' + session["userData"]["username"] + '/save'
     # Iterate directory
     for (dirpath, dir_names, file_names) in os.walk(dir_path):
         for i in dir_names:
@@ -369,7 +374,7 @@ def signup():
             paswdsha=hashlib.sha256(paswd.encode('utf-8')).hexdigest()
             date = datetime.datetime.now()
             date = date.strftime("%B %Y")
-            os.mkdir('static/audio/' + username)
+            os.mkdir(serverPath + 'static/audio/' + username)
             executeQuery("INSERT INTO audiocenter_users(joined, username, password, bio, place, website) VALUES (%s, %s, %s, %s, %s, %s);", (date, username, paswdsha, "This user has not added a bio yet.", "Earth", ""))
             return redirect(url_for("login"))
         else:
@@ -383,7 +388,7 @@ def userShow(userToShow):
     if len(data) == 0:
         return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
     userToShowData = userData(userToShow, False).createDict()
-    dir_path = 'static/audio/' + userToShow + '/save'
+    dir_path = serverPath + 'static/audio/' + userToShow + '/save'
     res = []
     # Iterate directory
     for (dirpath, dir_names, file_names) in os.walk(dir_path):
