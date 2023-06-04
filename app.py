@@ -6,8 +6,8 @@ from flask_mysqldb import MySQL
 import numpy as np
 import json
 # FOR SERVER
-#import public.AudioCenter.AudioCenter.AudioTools
-import AudioTools
+import public.AudioCenter.AudioCenter.AudioTools
+#import AudioTools
 import os
 import time
 import datetime
@@ -23,7 +23,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.secret_key = "secret"
 mysql = MySQL(app) 
 
-server = False #Change to true when it's time to upload to the server
+server = True #Change to true when it's time to upload to the server
 serverPath = ""
 if server:
     serverPath = "./public/AudioCenter/AudioCenter/"
@@ -125,12 +125,12 @@ def detect():
         trimmedFilename = serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
         proxy = open(trimmedFilename, "w")
         try:
-            AudioTools.trimSong(session["filename"], trimmedFilename)
+            public.AudioCenter.AudioCenter.AudioTools.trimSong(session["filename"], trimmedFilename)
         except:
             error = 'Oops! File format not supported.'
         session["filename"] = trimmedFilename
         try:
-            output = AudioTools.detectSong(session["filename"])
+            output = public.AudioCenter.AudioCenter.AudioTools.detectSong(session["filename"])
         except:
             error = 'Oops! File format not supported.'
         out["type"] = "detect"
@@ -165,7 +165,7 @@ def convert():
         session["filename"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
-            converted = AudioTools.mp3towav(session["filename"])
+            converted = public.AudioCenter.AudioCenter.AudioTools.mp3towav(session["filename"])
             if converted[1] == 1:
                 error = 'Oops! File format not supported.'
                 out["output"] = session["filename"]
@@ -185,7 +185,7 @@ def editor():
     try:
         output = [session["filename"]]
         out = dict() 
-        fileLength = AudioTools.length(output[0])
+        fileLength = public.AudioCenter.AudioCenter.AudioTools.length(output[0])
     except:
         pass
     errors = []
@@ -199,10 +199,10 @@ def editor():
             except:
                 pass
             filename = serverPath + 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-            f.save(filename) 
+            f.save(filename)
             session["filename"] = filename
             try:
-                fileLength = AudioTools.length(session["filename"])
+                fileLength = public.AudioCenter.AudioCenter.AudioTools.length(session["filename"])
             except:
                 errors.append("Oops! You uploaded an invalid file.")
                 session["filename"] = ""
@@ -216,7 +216,7 @@ def editor():
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.keyChange(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', steps)
+                    output = public.AudioCenter.AudioCenter.AudioTools.keyChange(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("type") == "AMPLIFY":
@@ -227,7 +227,7 @@ def editor():
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.amplify(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                    output = public.AudioCenter.AudioCenter.AudioTools.amplify(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("savepost"):
@@ -251,14 +251,14 @@ def editor():
                             executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
                         else: 
                             executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                        AudioTools.saveFile(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                        public.AudioCenter.AudioCenter.AudioTools.saveFile(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                 elif request.values.get("type") == "SPLIT":
                     out["type"] = "files"
                     try:
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.split(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', 2)
+                    output = public.AudioCenter.AudioCenter.AudioTools.split(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', 2)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("type") == "SPEEDCHANGE":
@@ -268,7 +268,7 @@ def editor():
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.changeSpeed(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                    output = public.AudioCenter.AudioCenter.AudioTools.changeSpeed(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                     return output[0]
             else:
@@ -276,7 +276,7 @@ def editor():
         if request.values.get("hide") is not None:
             session["filename"] = ""
         if request.values.get("delete") is not None:
-            AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
+            public.AudioCenter.AudioCenter.AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
     out["output"] = output
     return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
 

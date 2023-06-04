@@ -15,6 +15,11 @@ import subprocess
 import contextlib
 from scipy.io import wavfile
 
+server = True #Change to true when it's time to upload to the server
+serverPath = ""
+if server:
+    serverPath = "./public/AudioCenter/AudioCenterLocal/"
+
 def saveFile(file, output):
     song, fs = librosa.load(file)
     wavfile.write(output+"/audio.wav", fs, song)

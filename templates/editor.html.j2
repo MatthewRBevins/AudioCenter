@@ -377,6 +377,9 @@
             console.log("Run");
             var fd = new FormData(document.getElementById("matthew"))
             fd.append("type", t); 
+            for (var pair of fd.entries()) {
+                console.log(pair[0]+ ', ' + pair[1]); 
+            }
             $.ajax({
                 type: "POST",
                 url: "/editor",
