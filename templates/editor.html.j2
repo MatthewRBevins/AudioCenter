@@ -70,6 +70,7 @@
                                         <input type="hidden" name="startPoint" id="startPoint" value="0">
                                         <input type="hidden" name="endPoint" id="endPoint" value="0">
                                     </form>
+                                    
                                     <form method="POST" action="editor">
                                         <input type="hidden" name="hide" value="hide">
                                         <input type="submit" value="Clear Audio" class="dropdown-item">
@@ -142,6 +143,9 @@
                 {%endfor%}
                 <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="form" value="2">
+                <input type="hidden" name="effectsTotalWidth" id="effectsTotalWidth" value="0">
+                <input type="hidden" name="effectsStartPoint" id="effectsStartPoint" value="0">
+                <input type="hidden" name="effectsEndPoint" id="effectsEndPoint" value="0">
                 <div class="modal fade" id="keyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -294,7 +298,13 @@
             $('#endPoint').val(endCut)
             $('#deleteForm').submit()
         })
-
+        function effectForms() {
+            $('#effectsTotalWidth').val(totalWidth);
+            $('#effectsStartPoint').val(startCut);
+            $('#effectsEndPoint').val(endCut);
+            return true;
+        }
+        
         var zoomLevel = 100
         $('#file-open').on('change', () => {
             $('#file-open-form').submit()
