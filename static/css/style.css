@@ -11766,7 +11766,7 @@ form {
 
 .bg {
   /* All background images from https://www.shutterstock.com/search/fractal */
-  background-image: url("/static/images/DarkAudioWaves.png");
+  background-image: url("/AudioCenter/AudioCenter/static/images/DarkAudioWaves.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -11780,7 +11780,7 @@ form {
 
 .bgspinoff {
   /* All background images from https://www.shutterstock.com/search/fractal */
-  background-image: url("/static/images/DarkAudioWaves.png");
+  background-image: url("/AudioCenter/AudioCenter/static/images/DarkAudioWaves.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -11793,7 +11793,7 @@ form {
 
 .bgprofile {
   height: 100%;
-  background-image: url("/static/images/LoginBackground.png");
+  background-image: url("/AudioCenter/AudioCenter/static/images/LoginBackground.png");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -11805,7 +11805,7 @@ a {
 }
 
 .bg2 {
-  background-image: url("/static/images/LoginBackground.png");
+  background-image: url("/AudioCenter/AudioCenter/static/images/LoginBackground.png");
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -11817,7 +11817,7 @@ a {
 }
 
 .bg2spinoff {
-  background-image: url("/static/images/LoginBackground.png");
+  background-image: url("/AudioCenter/AudioCenter/static/images/LoginBackground.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -11830,7 +11830,7 @@ a {
 }
 
 .bg3 {
-  background-image: url("../static/InputFinal.jpg");
+  background-image: url("/AudioCenter/AudioCenter/static/images/InputFinal.jpg");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

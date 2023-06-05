@@ -212,7 +212,7 @@
                                 <h5>Save Audio to Profile</h5>
                                 <form method="POST" novalidate>
                                     <label>Post Name</label><br>
-                                    <input maxlength="20" type="text" name="posttitle"><br>
+                                    <input maxlength="20" type="text" name="posttitle"> <br>
                                     <label>Post Body</label><br>
                                     <textarea name="postbody"></textarea><br>
                                     {% if userData["username"] == "guest" %}
@@ -382,7 +382,7 @@
             }
             $.ajax({
                 type: "POST",
-                url: "/editor",
+                url: "/AudioCenter/AudioCenter/editor",
                 cache: false,
                 data: fd,
                 processData: false,
