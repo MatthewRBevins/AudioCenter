@@ -88,7 +88,10 @@ def index():
     verifySessions()
     res = []
     if session["userData"]["loggedIn"]:
-        res = genPosts(request.values.get('posttype'), 0)
+        if request.values.get('posttype') == '0':
+            res = genPosts('0', 0, None, 1)
+        else:
+            res = genPosts('1', 0, None, 0)
     return render_template('index.html.j2', userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
 
 @app.route('/detect', methods=["GET","POST"])
@@ -199,6 +202,7 @@ def editor():
                 error = "Oops! File format not supported."
         elif request.values.get("form") == "2":
             if session["filename"] != None:
+                print(request.values)
                 effectStart = int(request.values.get('effectsStartPoint'))
                 effectEnd = int(request.values.get('effectsEndPoint'))
                 effectWidth = int(request.values.get('effectsTotalWidth'))
@@ -291,18 +295,24 @@ def login():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     verifySessions()
+    error = ''
     if not session["userData"]["loggedIn"]:
         return(redirect(url_for("login")))
     if request.method == "POST":
         if request.values.get("formnum") == "0":
             f = request.files["file-input"]
-            try:
-                os.mkdir('static/images/pfps/' + session["userData"]["username"])
-            except:
-                pass
-            filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
-            f.save(filename)
-            executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
+            filen = int(f.seek(0, os.SEEK_END))
+            f.seek(0, os.SEEK_SET)
+            if filen < 1000000:
+                try:
+                    os.mkdir('static/images/pfps/' + session["userData"]["username"])
+                except:
+                    pass
+                filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
+                f.save(filename)
+                executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
+            else:
+                error = 'Oops! File too large. Please uplaod a file smaller than 1 mb.'
         elif request.values.get("formnum") == "1":
             newUsername = request.values.get("username")
             if newUsername != "":
@@ -320,20 +330,20 @@ def profile():
             if newPlace != "":
                 executeQuery("UPDATE audiocenter_users SET place=%s WHERE username=%s", (newPlace, session["userData"]["username"]))
             if newWebsite != "":
-                executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
+                import validators
+                if not validators.url(newWebsite):
+                    error = 'Oops! Please enter a valid URL.'
+                else:
+                    executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
     session["userData"] = userData(session["userData"]["username"], True).createDict()
     res = []
     spinoff = True
     dir_path = 'static/audio/' + session["userData"]["username"] + '/save'
     # Iterate directory
-    for (dirpath, dir_names, file_names) in os.walk(dir_path):
-        for i in dir_names:
-            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
-            #res.append(metadata)
-            res.append('post')
+    res = genPosts('2', 0, session["userData"]["username"], 2)
     if len(res) > 0:
         spinoff = False
-    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path, spinoff=spinoff)
+    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], posts = res, path = dir_path, spinoff=spinoff, error=error)
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
@@ -378,14 +388,14 @@ def userShow(userToShow):
         return render_template('index.html.j2', userData=session["userData"], error='Oops! User not found.')
     userToShowData = userData(userToShow, False).createDict()
     dir_path = 'static/audio/' + userToShow + '/save'
-    res = []
-    # Iterate directory
-    for (dirpath, dir_names, file_names) in os.walk(dir_path):
-        for i in dir_names:
-            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
-            #res.append(metadata)
-            res.append('post')
-    return render_template('profile.html.j2', spinoff=True, edit=False, userData=session["userData"], userToShowData=userToShowData, files=res)
+    if userToShow in session["userData"]["following"]:
+        res = genPosts('2', 0, userToShow, 0)
+    else:
+        res = genPosts('2', 0, userToShow, 1)
+    spinoff = True
+    if len(res) > 0:
+        spinoff = False
+    return render_template('profile.html.j2', spinoff=False, edit=False, userData=session["userData"], userToShowData=userToShowData, posts=res)
 
 @app.route('/signout', methods=['POST'])
 def signout():
@@ -438,9 +448,14 @@ def like():
     return 'success'
 
 @app.route('/genPosts', methods=['POST'])
-def genPosts(postType, startIndex):
+def genPosts(postType, startIndex, username, perms):
+    #perms = 0: public, perms = 1: followers only, perms = 2: private
+    permLevels = [["public"], ["public", "followers"], ["public", "followers", "private"]]
     res = []
+    #for you
     if postType == '0':
+        ii = 0
+        br = False
         for i in session["userData"]["following"]:
             userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
             post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
@@ -449,13 +464,41 @@ def genPosts(postType, startIndex):
                 i["liked"] = 0
                 if len(liked) != 0:
                     i["liked"] = liked[0]["like_or_dislike"]
-                res.append(i)
-    else:
-        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
+                if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                    res.append(i)
+                if len(res) == 10:
+                    br = True
+                    break
+                ii += 1
+            if br:
+                break
+    #specific username
+    elif postType == '2':
+        userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (username,))
+        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
+        ii = 0
         for i in post:
             liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
             i["liked"] = 0
             if len(liked) != 0:
                 i["liked"] = liked[0]["like_or_dislike"]
-            res.append(i)
+            if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                res.append(i)
+            if len(res) == 10:
+                break
+            ii += 1
+    #trending
+    else:
+        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
+        ii = 0
+        for i in post:
+            liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
+            i["liked"] = 0
+            if len(liked) != 0:
+                i["liked"] = liked[0]["like_or_dislike"]
+            if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                res.append(i)
+            if len(res) == 10:
+                break
+            ii += 1
     return res

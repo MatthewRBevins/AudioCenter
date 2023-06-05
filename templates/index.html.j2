@@ -64,7 +64,7 @@
                             $(this).children('.like-icon').html(`<i class="fa-regular fa-thumbs-down"></i>`)
                             prev = -1
                         }
-                        if ($(this).hasClass('like') && !changed) {
+                        if ($(this).hasClass('like') && !changed) { 
                             $(this).children('.count').html(parseInt($(this).children('.count').html())+1)
                             if ($(this).parent().children('.disliked').length != 0) {
                                 $(this).parent().children('.disliked').children('.count').html(parseInt($(this).parent().children('.disliked').children('.count').html())-1)
