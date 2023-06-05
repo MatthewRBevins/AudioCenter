@@ -11727,6 +11727,15 @@ html {
   height: 100%;
 }
 
+.track {
+  border-radius: 5px;
+  border: solid 2px yellow;
+}
+
+.track-controls {
+  background-color: gray;
+}
+
 #waveform {
   background-color: black;
   padding-top: 10px;
@@ -12071,9 +12080,4 @@ span.progress {
 
 .post-visibility {
   font-style: italic;
-}
-
-.post-body {
-  padding-left: 100px;
-  padding-right: 100px;
 }/*# sourceMappingURL=style.css.map */

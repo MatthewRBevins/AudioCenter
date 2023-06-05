@@ -88,7 +88,7 @@ def index():
     verifySessions()
     res = []
     if session["userData"]["loggedIn"]:
-        res = genPosts(request.values.get('posttype'))
+        res = genPosts(request.values.get('posttype'), 0)
     return render_template('index.html.j2', userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
 
 @app.route('/detect', methods=["GET","POST"])
@@ -178,8 +178,9 @@ def editor():
         out = dict() 
         fileLength = AudioTools.length(output[0])
     except:
+        error = 'Oops! File format not supported.'
         pass
-    errors = []
+    error = ''
     if request.method == "POST":
         if request.values.get("form") == "1":
             f = request.files["file-open"]
@@ -191,7 +192,11 @@ def editor():
             filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
             session["filename"] = filename
-            fileLength = AudioTools.length(session["filename"])
+            try:
+                fileLength = AudioTools.length(session["filename"])
+            except:
+                session["filename"] = ""
+                error = "Oops! File format not supported."
         elif request.values.get("form") == "2":
             if session["filename"] != None:
                 if request.values.get("key-change"):
@@ -242,13 +247,13 @@ def editor():
                     output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
             else:
-                errors.append("You have not uploaded a file.")
+                error = "Oops! You have not uploaded a file."
         if request.values.get("hide") is not None:
             session["filename"] = ""
         if request.values.get("delete") is not None:
             AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
     out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
+    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, error=error, userData=session["userData"], fileLength = fileLength)
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 
@@ -356,7 +361,7 @@ def userShow(userToShow):
     data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (userToShow,))
     print("DATA:")
     if len(data) == 0:
-        return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
+        return render_template('index.html.j2', userData=session["userData"], error='Oops! User not found.')
     userToShowData = userData(userToShow, False).createDict()
     dir_path = 'static/audio/' + userToShow + '/save'
     res = []
@@ -419,18 +424,14 @@ def like():
     return 'success'
 
 @app.route('/genPosts', methods=['POST'])
-def genPosts(postType):
+def genPosts(postType, startIndex):
     res = []
     if postType == '0':
         for i in session["userData"]["following"]:
             userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
             post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
             for i in post:
-                print(i)
-                print("*********")
-                print(i["id"])
                 liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
-                print(liked)
                 i["liked"] = 0
                 if len(liked) != 0:
                     i["liked"] = liked[0]["like_or_dislike"]
@@ -438,11 +439,7 @@ def genPosts(postType):
     else:
         post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
         for i in post:
-            print(i)
-            print("*********")
-            print(i["id"])
             liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
-            print(liked)
             i["liked"] = 0
             if len(liked) != 0:
                 i["liked"] = liked[0]["like_or_dislike"]

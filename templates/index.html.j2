@@ -7,6 +7,9 @@
 {% block body %}        
     <div class="bg">
         <br><br><br>
+        <div class="error">
+            <p>{{error}}</p>
+        </div>
         <div id="bgtext">
             <div class="fadein">
                 {%if userData["loggedIn"]%}

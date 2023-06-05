@@ -23,31 +23,18 @@
                 });
             });
         </script>
+        <script>
+            var wavesurfers = []
+        </script>
 {% endblock %}
 
 {% block body %}        
     <div class="">
         <div id="bgtext">
             <div class="fadein">
-                <!--<h1>AudioCenter Editor</h1>
-                <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="form" value="1">
-                    <input class="btn" type="file" name="file">
-                    <input class="btn btn-primary" type="submit" name="submit" value="Upload">
-                </form>
-                <h5>Current File: {{fn}}</h5>
-                {%if out.type == "detect"%}
-                    <h3>{{out.output.title}}</h3>
-                    <h4>{{out.output.artist}}</h4>
-                    <img src="{{out.output.image}}">
-                    <br><br><br>
-                    <h5>{{out.output.lyrics}}</h5>
-                {%elif out.type == "files"%}
-                {%for i in out.output%}
-                    {%set ffn = i.split('/')%}
-                    <h3>Download: <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a></h3>
-                {%endfor%}
-                {%endif%}-->
+                <div class="error">
+                    <p>{{error}}</p>
+                </div>
                 <nav class="navbar navbar-expand-lg navbar-light" id="editorRibbon" style="background-color: #91d4b1;">
                     <div class="container-fluid">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,15 +131,15 @@
                         </div>
                     </div>
                 </div>
-                <div id="waveform"></div>
-                <div id="spectogram"></div>
-                <button class="btn btn-primary" onclick="wavesurfer.playPause()">
-            <i class="glyphicon glyphicon-play"></i>
-            Play
-            /
-            <i class="glyphicon glyphicon-pause"></i>
-            Stop
-        </button>
+                {%for i in out['output']%}
+                <div class="track" fn="{{i}}">
+                    <div class="waveform" id="waveform{{loop.index0}}"></div>
+                    <div class="spectogram"></div>
+                    <div class="track-controls">
+                        <button class="btn btn-primary" class="playPause" id="playPause{{loop.index0}}" onclick="wavesurfers[{{loop.index0}}].ws.playPause()">Play/Pause</button>
+                    </div>
+                </div>
+                {%endfor%}
                 <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="form" value="2">
                 <div class="modal fade" id="keyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -240,7 +227,67 @@
             </div>
         </div>
     </div>
-    <script>
+    <script type="module">
+        // Spectrogram plugin
+
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+        import Spectrogram from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/spectrogram.js'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/regions.js'
+        
+        
+        class AudioTrack {
+            constructor(fn, container) {
+                // Create an instance of WaveSurfer
+                this.ws = WaveSurfer.create({
+                container: '#' + container,
+                waveColor: 'rgb(200, 0, 200)',
+                progressColor: 'rgb(100, 0, 100)',
+                url: fn,
+                sampleRate: 22050,
+                })
+
+                // Initialize the Spectrogram plugin
+                this.ws.registerPlugin(
+                Spectrogram.create({
+                    labels: true,
+                    height: 128,
+                }),
+                )
+
+                const wsRegions = this.ws.registerPlugin(RegionsPlugin.create())
+                
+                this.ws.on('decode', () => {
+                    // Regions
+                    wsRegions.addRegion({
+                        start: 4,
+                        end: 7,
+                        content: 'Selected',
+                        color: 'rgba(220, 255, 51, 0.3)',
+                    })
+                })
+                wsRegions.enableDragSelection({
+                    color: 'rgba(255, 0, 0, 0.1)',
+                })
+
+                wsRegions.on('region-updated', (region) => {
+                    console.log('Updated region', region)
+                })
+            }
+        }
+        
+        let tracks = document.getElementsByClassName("track")
+        console.log(tracks)
+        for (let i = 0; i < tracks.length; i++) {
+            wavesurfers.push(new AudioTrack(tracks[i].getAttribute("fn"), "waveform" + i))
+        }
+
+        $('#file-open').on('change', () => {
+            $('#file-open-form').submit()
+        })
+
+    </script>
+    
+    <!--<script>
         $('#deleteButton').on('click', () => {
             $('#totalWidth').val(totalWidth)
             $('#startPoint').val(startCut)
@@ -337,5 +384,5 @@
                 }    
                 
             }
-    </script>
+    </script>-->
 {% endblock %}
