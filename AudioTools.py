@@ -54,21 +54,27 @@ def trimSong(originalWavPath, newWavPath):
     trim = wavfile.write(newWavPath, sampleRate, waveData[0:endSample])
     return trim
 
-def makeCut(filepath, startpoint, endpoint, width):
-    #Cut audio function
+def makeCut(filepath, cutData, effect, steps=0):
+    print(cutData)
+    #start, end, length
     sound = AudioSegment.from_file(filepath)
+    startpoint = 1000*cutData[0]
+    endpoint = 1000*cutData[1]
     print(startpoint)
+    #print(filepath)
     print(endpoint)
-    print(width)
-    print("****")
-    startpoint = startpoint/width
-    endpoint = endpoint/width
-    soundlength = len(sound)
-    print(startpoint)
-    print(soundlength)
-    print(startpoint*soundlength)
-    finishedcut = sound[:int(startpoint*soundlength)] + sound[int(endpoint*soundlength):]
+    print(len(sound))
+    selectedsound = sound[int(startpoint):int(endpoint)]
+    if effect == 'key':
+        selectedKeyChange = keyChange(selectedsound, None, steps)
+        finishedcut = sound[:int(startpoint)] + selectedKeyChange + sound[int(endpoint):]
+    elif effect == 'speed':
+        selectedSpeedChange = changeSpeed(selectedsound, None, steps)
+        finishedcut = sound[:int(startpoint)] + selectedSpeedChange + sound[int(endpoint):]
+    else:
+        finishedcut = sound[:int(startpoint)] + sound[int(endpoint):]
     finishedcut.export(filepath, format='wav')
+    return filepath
     
 
 def detectSong(file):
@@ -77,23 +83,29 @@ def detectSong(file):
     return loop.run_until_complete(songDetectAsync(file))
 
 def keyChange(file, output, steps):
-    pathFound = False
-    y, sr = librosa.load(file)
-    y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
-    #First of many codeblocks like this
-    #This is to avoid filename endings such as "/keychange/keychange.wav," which can cause folder confusion
-    if (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "keychange") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "amplify") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "speedChange"): 
-        path = output+file.split("/")[len(file.split("/"))-1].split(".w")[0]
+    if isinstance(file, AudioSegment):
+        y = np.frombuffer(file._data, dtype=np.int16).astype(np.float32)/2**15
+        y = librosa.effects.pitch_shift(y, file.frame_rate, n_steps=steps)
+        a  = AudioSegment(np.array(y * (1<<15), dtype=np.int16).tobytes(), frame_rate = file.frame_rate, sample_width=2, channels = 1)
+        return a
     else:
-        path = output+file.split("/")[len(file.split("/"))-2]+"1"
-    if os.path.exists(path):
-        pathFound = True 
-    #pathFound looks redundant, but this is actually necessary to remove a file permission error
-    if pathFound: 
-        shutil.rmtree(path)
-    os.mkdir(path)
-    sf.write(path+"/keychange.wav", y_shifted, sr, 'PCM_24')
-    return [path+"/keychange.wav"]
+        pathFound = False
+        y, sr = librosa.load(file)
+        y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+        #First of many codeblocks like this
+        #This is to avoid filename endings such as "/keychange/keychange.wav," which can cause folder confusion
+        if (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "keychange") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "amplify") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "speedChange"): 
+            path = output+file.split("/")[len(file.split("/"))-1].split(".w")[0]
+        else:
+            path = output+file.split("/")[len(file.split("/"))-2]+"1"
+        if os.path.exists(path):
+            pathFound = True 
+        #pathFound looks redundant, but this is actually necessary to remove a file permission error
+        if pathFound: 
+            shutil.rmtree(path)
+        os.mkdir(path)
+        sf.write(path+"/keychange.wav", y_shifted, sr, 'PCM_24')
+        return [path+"/keychange.wav"]
 
 def writeFrames(file, frames, output):
     samplerate = 48000
@@ -152,11 +164,22 @@ def amplify(file, output, factor):
             audio.writeframesraw(audioop.mul(frames, p.sampwidth, factor))
     return [path+'/amplify.wav']
 
-def combine(sound1, sound2): 
-    audiosound1 = AudioSegment.from_wav(sound1)
-    audiosound2 = AudioSegment.from_wav(sound2)
-    mixed = audiosound1.overlay(audiosound2) 
-    mixed.export("mixed.wav", format='wav')
+def combine(audio, output):
+    file = audio[0]
+    audiosegments = []
+    for i in audio:
+        audiosegments.append(AudioSegment.from_wav(i))
+    i = 1
+    prev = audiosegments[0]
+    while i < len(audiosegments):
+        prev = prev.overlay(audiosegments[i]) 
+        i+=1
+    try:
+        os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+    except:
+        pass
+    prev.export(output + file.split("/")[len(file.split("/"))-1].split(".w")[0] + '/combine.wav', format='wav')
+    return output + file.split("/")[len(file.split("/"))-1].split(".w")[0] + '/combine.wav'
 
 def split(file, output, stems):
     #Spleeter
@@ -171,24 +194,30 @@ def split(file, output, stems):
 
 
 def changeSpeed(file, output, factor):
-    pathFound = False
-    prospectPath = file.split("/")[len(file.split("/"))-1].split(".w")[0]
-    if (prospectPath != "amplify") and (prospectPath != "keychange") and (prospectPath != "speedChange"): 
-        path = output+prospectPath
+    if isinstance(file, AudioSegment):
+        y = np.frombuffer(file._data, dtype=np.int16).astype(np.float32)/2**15
+        y = librosa.effects.time_stretch(y, factor)
+        a  = AudioSegment(np.array(y * (1<<15), dtype=np.int16).tobytes(), frame_rate = file.frame_rate, sample_width=2, channels = 1)
+        return a
     else:
-        path = output+file.split("/")[len(file.split("/"))-2]+"1"
-    if os.path.exists(path):
-        pathFound = True 
-    if pathFound: 
-        shutil.rmtree(path)
-    os.mkdir(path)
-    song, fs = librosa.load(file)
-    #time_stretch corresponds to speed changing
-    changed = librosa.effects.time_stretch(song, factor)
-    print(changed)
-    print(changed.astype(np.float16))
-    wavfile.write(path+"/speedChange.wav", fs, float2pcm(changed)) # save the song 
-    return [path+'/speedChange.wav']
+        pathFound = False
+        prospectPath = file.split("/")[len(file.split("/"))-1].split(".w")[0]
+        if (prospectPath != "amplify") and (prospectPath != "keychange") and (prospectPath != "speedChange"): 
+            path = output+prospectPath
+        else:
+            path = output+file.split("/")[len(file.split("/"))-2]+"1"
+        if os.path.exists(path):
+            pathFound = True 
+        if pathFound: 
+            shutil.rmtree(path)
+        os.mkdir(path)
+        song, fs = librosa.load(file)
+        #time_stretch corresponds to speed changing
+        changed = librosa.effects.time_stretch(song, factor)
+        print(changed)
+        print(changed.astype(np.float16))
+        wavfile.write(path+"/speedchange.wav", fs, float2pcm(changed)) # save the song 
+        return path+'/speedchange.wav'
 
 def specGen(ratio, audio):
     #Spectrogram generator
@@ -207,3 +236,14 @@ def specGen(ratio, audio):
     plt.xlim(0, time)
     plt.colorbar()
     plt.show()
+    
+#convert audiosegment to librosa 
+# from https://groups.google.com/g/librosa/c/XWae4PdbXuk?pli=1   
+def audiosegment_to_ndarray(audiosegment):
+    samples = audiosegment.get_array_of_samples()
+    samples_float = librosa.util.buf_to_float(samples,n_bytes=2,
+                                      dtype=np.float32)
+    sample_all = samples_float
+        
+        
+    return [sample_all,audiosegment.frame_rate]

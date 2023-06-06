@@ -24,12 +24,34 @@
                 });
             });
         </script>
+        <script>
+            var trackData = []
+        </script>
 {% endblock %}
 
 {% block body %}        
     <div class="">
         <div id="bgtext">
             <div class="fadein">
+                <!--<h1>AudioCenter Editor</h1>
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="form" value="1">
+                    <input class="btn" type="file" name="file">
+                    <input class="btn btn-primary" type="submit" name="submit" value="Upload">
+                </form>
+                <h5>Current File: {{fn}}</h5>
+                {%if out.type == "detect"%}
+                    <h3>{{out.output.title}}</h3>
+                    <h4>{{out.output.artist}}</h4>
+                    <img src="{{out.output.image}}">
+                    <br><br><br>
+                    <h5>{{out.output.lyrics}}</h5>
+                {%elif out.type == "files"%}
+                {%for i in out.output%}
+                    {%set ffn = i.split('/')%}
+                    <h3>Download: <a href="{{i}}" download>{{ffn[ffn|length-1]}}</a></h3>
+                {%endfor%}
+                {%endif%}-->
                 <nav class="navbar navbar-expand-lg navbar-light" id="editorRibbon" style="background-color: #91d4b1;">
                     <div class="container-fluid">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,15 +64,16 @@
                                     File
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <label for="file-open" class="dropdown-item">Open</label>
-                                    <form method="POST" id="file-open-form" style="display: none" enctype="multipart/form-data">
+                                    <label for="file-open-new" class="dropdown-item">Open as New Track</label>
+                                    <form method="POST" class="file-open-form" style="display: none" enctype="multipart/form-data">
                                         <input type="hidden" name="form" value="1">
-                                        <input type="file" id="file-open" name="file-open" style="display:none">
+                                        <input type="hidden" name="track" value="new">
+                                        <input type="file" class="file-open" onchange="$(this).parent().submit()" name="file-open" id="file-open-new" style="display:none">
                                     </form>
                                     {%for i in out['output']%}
                                     <a class="dropdown-item" href="{{i}}" download>Download Track {{loop.index}}</a>
                                     {%endfor%}
-                                    <label id="clickme" onclick="reset()" class="dropdown-item show show2 btn" data-bs-toggle="modal" data-bs-target="#saveToProfileModal">Save to Profile</label>
+                                    <label id="clickme" class="dropdown-item show show2 btn" data-bs-toggle="modal" data-bs-target="#saveToProfileModal">Save to Profile</label>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
@@ -58,26 +81,7 @@
                                     Edit
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" id="deleteButton">Delete</a>
-                                    <form method="POST" action="editor" id="deleteForm">
-                                        <input type="hidden" name="delete" value="delete">
-                                        <input type="hidden" name="totalWidth" id="totalWidth" value="0">
-                                        <input type="hidden" name="startPoint" id="startPoint" value="0">
-                                        <input type="hidden" name="endPoint" id="endPoint" value="0">
-                                    </form>
-                                    <form method="POST" action="editor">
-                                        <input type="hidden" name="hide" value="hide">
-                                        <input type="submit" value="Clear Audio" class="dropdown-item">
-                                    </form> 
-                                    </div>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Select
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" onclick="fillProgress(100)">Select All</a>
-                                    <a class="dropdown-item" onclick="fillProgress(0)">Select None</a>
+                                    <label class="dropdown-item show show2 btn" data-bs-toggle="modal" data-bs-target="#cutModal">Cut</label>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
@@ -87,7 +91,7 @@
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                     <label id="clickme" class="dropdown-item show show2 btn" onclick="showKey() " data-bs-toggle="modal" data-bs-target="#keyModal">Key Change</label>
                                     <label class="dropdown-item" onclick="showAmp()" data-bs-toggle="modal" data-bs-target="#ampModal">Amplify</label>
-                                    <label class="dropdown-item" onclick="showSplit()" data-bs-toggle="modal" data-bs-target="#splitModal">Split Tracks</label>
+                                    <label id="clickme" for="split-tracks" class="dropdown-item show show2 btn" onclick="alertModal(1.2*{{fileLength}} + 15); this.onclick=null; showBar(); hideBar(1.2*{{fileLength}} + 15);" data-bs-toggle="modal" data-bs-target="#exampleModal">Split Tracks</label>
                                     <label class="dropdown-item" onclick="showSpeed()" data-bs-toggle="modal" data-bs-target="#speedModal">Speed Change</label>
                                     <form method="POST" style="display:none">
                                         <input type="hidden" name="form" value="2">
@@ -108,15 +112,21 @@
                         </div>
                     </div>
                 </nav>
-                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
-                            <div class="modal-body">
-                                <div id="bar" class="counter" style="">0</div>
-                                <div id="bar2" class="progressbar" style="">
-                                    <span class="progress"></span>
-                                </div>
+                        <div class="modal-body">
+                            <div id="bar" class="counter" style="">0</div>
+                            <div id="bar2" class="progressbar" style="">
+                                <span class="progress"></span>
                             </div>
+                            <div id="text" style="display:none">
+                                <p>All done!</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -129,8 +139,7 @@
             <i class="glyphicon glyphicon-pause"></i>
             Stop
         </button>
-                <form method="POST" enctype="multipart/form-data" id="matthew">
-                <input type="hidden" name="key-change" value="True">
+                <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="form" value="2">
                 <div class="modal fade" id="keyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
@@ -139,8 +148,7 @@
                             <div id="hiddenKeyChange">
                                 <h5>Change Key</h5>
                                 <input type="range" name="steps" min="-10" max="10" step="1" oninput="document.getElementById('keyValue').innerHTML = this.value">
-	                            <input type="hidden" name="key-change" value="1">
-                                <input id="clickmekey" class="show show2 btn btn-primary" onclick="alertModal(1.1*{{fileLength}} + 15); this.onclick=null; showBar(); hideBar(1.1*{{fileLength}} + 15); matthewRBevins()" type="submit" name="key-change" value="Change" data-bs-toggle="modal" data-bs-target="#exampleModal" data-backdrop="static" data-keyboard="false">                                
+                                <input id="clickme" class="show show2 btn btn-primary" onclick="alertModal(1.1*{{fileLength}} + 15); this.onclick=null; showBar(); hideBar(1.1*{{fileLength}} + 15);" type="submit" name="key-change" value="Change" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                 <br><h5>Half-Steps: <output id="keyValue">0</output></h5>
                             </div>
                         </div>
@@ -149,19 +157,51 @@
                         </div>
                         </div>
                     </div>
+                </div>
+                {%endfor%}
+
+                    <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <form method="POST" enctype="multipart/form-data">
+                                        <input type="hidden" name="form" value="2">
+                                        <h5>Download Audio</h5>
+                                        <label>Download Individually</label><input type="radio" name="download-type" value="i" checked><br>
+                                        <label>Download Mixed</label><input type="radio" name="download-type" value="m"><br>
+                                        {%for i in out['output']%}
+                                        <label>Track {{loop.index}}</label><input type="checkbox" name="track" value="{{loop.index0}}" checked>
+                                        {%endfor%}
+                                        <br>
+                                        <input type="submit" class="btn btn-primary" name="download" value="Download">
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 
-                    <div class="modal fade" id="speedModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="saveToProfileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                         <div class="modal-body">
-                            <div id="hiddenSpeedChange">
-                                <h5>Change Speed Factor</h5>
-                                <input type="range" name="factorSpeed" min="0.1" max="4" step="0.1" oninput="document.getElementById('speedValue').innerHTML = this.value">
-                                <input class="btn btn-primary" type="submit" name="speed-change" value="Change">
-                                <br><h5>Steps: <output id="speedValue">2</output></h5>
-                            </div>
+                            <h5>Save Audio to Profile</h5>
+                            <form method="POST">
+                                <label>Post Name</label><br>
+                                <input required maxlength="20" type="text" name="posttitle"><br>
+                                <label>Post Body</label><br>
+                                <textarea required name="postbody"></textarea><br>
+                                <label>Private</label>
+                                <input checked type="radio" required name="vis" value="private"><br>
+                                <label>Followers Only</label>
+                                <input type="radio" required name="vis" value="followers"><br>
+                                <label>Public</label>
+                                <input type="radio" required name="vis" value="public"><br>
+                                <input class="btn btn-primary" type="submit" name="savepost" value="Save">
+                            </form>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -169,69 +209,38 @@
                         </div>
                     </div>
                     </div>
+
                     <div class="modal fade" id="ampModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                         <div class="modal-body">
                             <div id="hiddenAmplify">
                                 <h5>Change Amplify Factor</h5>
-	                            <input type="hidden" name="key-change" value="False">
-                                <input type="hidden" name="amplify" value="True">
                                 <input type="range" name="factorAmp" min="0.1" max="4" step="0.1" oninput="document.getElementById('ampValue').innerHTML = this.value">
                                 <input class="btn btn-primary" type="submit" name="amplify" value="Change">
                                 <br><h5>Steps: <output id="ampValue">2</output></h5>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                        </div>
                     </div>
-                    </div>
-                    <div class="modal fade" id="splitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                        <div class="modal-body">
-                            <div id="hiddenSplit">
-                                <h5>Split Tracks?</h5>
-                                If you proceed, Audio Center will remove the lyrics and display 
-                                the karaoke waveform. This action cannot be reversed.
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <input class="btn btn-primary me-auto" type="submit" name="split" value="Proceed" onclick="alertModal(2*{{fileLength}} + 15); this.onclick=null; showBar(); hideBar(2*{{fileLength}} + 15)" type="submit" name="key-change" value="Change" data-bs-toggle="modal" data-bs-target="#exampleModal" data-backdrop="static" data-keyboard="false">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="modal fade" id="saveToProfileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+                    <div class="modal fade" id="splitModal" tabindex="-1" role="dialog" aria-labelledby="splitModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
-                            <div class="modal-body">
-                                <h5>Save Audio to Profile</h5>
-                                <form method="POST" novalidate>
-                                    <label>Post Name</label><br>
-                                    <input maxlength="20" type="text" name="posttitle"> <br>
-                                    <label>Post Body</label><br>
-                                    <textarea name="postbody"></textarea><br>
-                                    {% if userData["username"] == "guest" %}
-                                        <p>Since you are not logged in, clicking "Save" will make this audio available to everyone. 
-                                        <a href="login">Log in</a> to create a private audio bank.</p>
-                                    {% else %}
-                                        <label>Private</label>
-                                        <input checked type="radio" required name="vis" value="private"><br>
-                                        <label>Followers Only</label>
-                                        <input type="radio" required name="vis" value="followers"><br>
-                                        <label>Public</label>
-                                        <input type="radio" required name="vis" value="public"><br>
-                                    {% endif %}
-                                    <input class="btn btn-primary" type="submit" name="savepost" value="Save">
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+                                <div class="modal-body">
+                                    <form method="POST" enctype="multipart/form-data">
+                                        <input type="hidden" name="form" value="2">
+                                        <input type="hidden" class="selected" name="selected" value="">
+                                        <h5>Split Tracks</h5>
+                                        {%for i in out['output']%}
+                                        <label>Track {{loop.index}}</label><input type="checkbox" name="track" value="{{loop.index0}}" checked>
+                                        {%endfor%}
+                                        <br>
+                                        <input type="submit" class="btn btn-primary" name="split-tracks" value="Split">
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -240,23 +249,13 @@
         </div>
     </div>
     <script>
-	    let t = "NONE"; 
-        var keyButton = document.getElementById("clickmekey");
-        /* Resets progress bar every time */
-        keyButton.onclick = function() {
-            alertModal(1.1*{{fileLength}} + 15);
-        } 
         $('#deleteButton').on('click', () => {
             $('#totalWidth').val(totalWidth)
             $('#startPoint').val(startCut)
             $('#endPoint').val(endCut)
             $('#deleteForm').submit()
         })
-        /* Changes watch mode to split */
-    	function split() {
-            t = "SPLIT";
-            console.log(t);
-        }
+
         var zoomLevel = 100
         $('#file-open').on('change', () => {
             $('#file-open-form').submit()
@@ -313,12 +312,8 @@
             wavesurfer.zoom(zoomLevel)
         }
         
-        /* Show keychange modal */
         function showKey() {
-	        t = "KEYCHANGE"; 
-            if(!($("#hiddenKeyChange").is(":visible"))){
-                $("#hiddenKeyChange").show();
-            }
+            $("#hiddenKeyChange").toggle();
             if($("#hiddenSpeedChange").is(":visible")){
                 $("#hiddenSpeedChange").toggle();
                 }
@@ -327,10 +322,9 @@
                 }
             }
 
-        /* Show speedchange modal */
         function showSpeed() {
-	        t = "SPEEDCHANGE"; 
-            $("#hiddenSpeedChange").show();
+            $("#hiddenSpeedChange").toggle();
+
             if($("#hiddenKeyChange").is(":visible")){
                 $("#hiddenKeyChange").toggle();
                 }
@@ -339,23 +333,10 @@
                 }
                 
             }   
-
-        /* Show split modal */
-        function showSplit() {
-            t = "SPLIT"; 
-            closeModal(); 
-            $("#hiddenSplit").show();
-        }
-
-        /* Default reset that sets mode to save post */
-        function reset() {
-            t = "SAVE"; 
-        }
-
-        /* Show amplify modal */            
+            
         function showAmp() {
-	        t = "AMPLIFY"; 
-            $("#hiddenAmplify").show();
+            $("#hiddenAmplify").toggle();
+
             if($("#hiddenKeyChange").is(":visible")){
                 $("#hiddenKeyChange").toggle();
                 }
@@ -364,55 +345,5 @@
                 }    
                 
             }
-
-        /* Close all open modals */
-	    function closeModal(){
-            $("#exampleModal").modal('hide');
-            $("#ampModal").modal('hide');
-            $("#speedModal").modal('hide');
-            $("#keyModal").modal('hide');
-            $("#splitModal").modal('hide');
-        };
-
-        /* On submit of form, do not reload page if not in savepost mode (for AJAX) */
-        $('#matthew').on("submit", (e)=>{
-            if(t != "SAVE") {
-                e.preventDefault();
-                matthewRBevins(); 
-            } 
-        })
-        
-        /* AJAX Function*/ 
-        function matthewRBevins() {
-            console.log("Run");
-            /* Get data */
-            var fd = new FormData(document.getElementById("matthew"))
-            /* Append action type */
-            fd.append("type", t); 
-            /* Debugging purposes */
-            for (var pair of fd.entries()) {
-                console.log(pair[0]+ ', ' + pair[1]); 
-            }
-            $.ajax({
-                type: "POST",
-                url: "/AudioCenter/AudioCenter/editor",
-                cache: false,
-                data: fd,
-                processData: false,
-                contentType: false,
-                success: function(result) {
-                    closeModal()
-                    console.log(result)
-                    console.log("SUCCESS")
-                    /* Load waveform */
-                    wavesurfer.load(result)
-                    console.log("LOADED")
-                },
-                error: function(result) {
-                    console.log(result)
-                    console.log("FAILURE")
-                }
-            })  
-        }
     </script>
 {% endblock %}

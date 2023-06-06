@@ -6,7 +6,7 @@ from flask_mysqldb import MySQL
 import numpy as np
 import json
 # FOR SERVER
-import public.AudioCenter.AudioCenter.AudioTools
+import AudioTools
 #import AudioTools
 import os
 import time
@@ -20,6 +20,9 @@ app.config['MYSQL_DB']='2223project_1'
 app.config['MYSQL_CURSORCLASS']='DictCursor'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
+app.config['TESTING'] = True
 app.secret_key = "secret"
 mysql = MySQL(app) 
 
@@ -87,6 +90,14 @@ def verifySessions():
         session["filename"]
     except KeyError:
         session["filename"] = None
+    try:
+        session["detect"]
+    except KeyError:
+        session["detect"] = None
+    try:
+        session["convert"]
+    except KeyError:
+        session["convert"] = None
     print("DONE")
 
 @app.route('/')
@@ -96,10 +107,11 @@ def index():
     spinoff = False
     if session["userData"]["loggedIn"]:
         #Social feed is an exclusive login feature!
-        res = genPosts(request.values.get('posttype'))
-        if len(res) > 1: 
-            spinoff = True
-    return render_template('index.html.j2', spinoff=spinoff, userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
+        if request.values.get('posttype') == '0':
+            res = genPosts('0', 0, None, 1)
+        else:
+            res = genPosts('1', 0, None, 0)
+    return render_template('index.html.j2', userData=session["userData"], posts=res, posttype=request.values.get('posttype'))
 
 @app.route('/detect', methods=["GET","POST"])
 def detect():
@@ -119,8 +131,8 @@ def detect():
             pass
         filename = serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
         f.save(filename) 
-        session["filename"] = filename
-        originalFilename = session["filename"] 
+        session["detect"] = filename
+        originalFilename = session["detect"] 
         t = str(int(time.time()))
         try:
             os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/')
@@ -130,22 +142,21 @@ def detect():
         proxy = open(trimmedFilename, "w")
         try:
             #To make detect faster, we only pass the first 20 seconds of the song into Shazam
-            public.AudioCenter.AudioCenter.AudioTools.trimSong(session["filename"], trimmedFilename)
+            AudioTools.trimSong(session["detect"], trimmedFilename)
         except:
             #File validation!
             error = 'Oops! File format not supported.'
-        session["filename"] = trimmedFilename
+        session["detect"] = trimmedFilename
         try:
-            #Actual detection
-            output = public.AudioCenter.AudioCenter.AudioTools.detectSong(session["filename"])
+            output = AudioTools.detectSong(session["detect"])
         except:
             error = 'Oops! File format not supported.'
         out["type"] = "detect"
-        session["filename"] = originalFilename
+        session["detect"] = originalFilename
         out["output"] = output
         if output == None and error == '':
             error = 'Oops! Song not detected.'
-    return render_template('detect.html.j2', scroll=scroll, fn=session["filename"], userData=session["userData"], out=out, error=error)
+    return render_template('detect.html.j2', fn=session["detect"], userData=session["userData"], out=out, error=error)
 
 @app.route('/convert', methods=["GET","POST"])
 def convert():
@@ -170,140 +181,209 @@ def convert():
             f.save(filename) 
         except:
             pass
-        session["filename"] = filename
+        session["convert"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
             #mp3/m4a to wav
-            converted = public.AudioCenter.AudioCenter.AudioTools.mp3towav(session["filename"])
+            converted = AudioTools.mp3towav(session["convert"])
             if converted[1] == 1:
                 error = 'Oops! File format not supported.'
-                out["output"] = session["filename"]
+                out["output"] = session["convert"]
             else:
                 out["output"] = converted[0]
         else:
-            out["output"] = session["filename"]
+            out["output"] = session["convert"]
         basename = os.path.basename(out["output"])
         
-    return render_template('convert.html.j2', error=error, fn=session["filename"], userData=session["userData"], out=out, base=basename)
+    return render_template('convert.html.j2', error=error, fn=session["convert"], userData=session["userData"], out=out, base=basename)
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     verifySessions()
     print("Checkpoint 1")
     fileLength = 0
-    try:
-        #See if file has been uploaded yet
-        output = [session["filename"]]
-        out = dict() 
-        fileLength = public.AudioCenter.AudioCenter.AudioTools.length(output[0])
-    except:
-        pass
-    errors = []
+    output = []
+    out = dict()
+    error = ''
+    print(session["filename"])
+    if session["filename"] == None:
+        session["filename"] = []
     if request.method == "POST":
         print("Checkpoint 2")
         if request.values.get("form") == "1":
             #File upload
+            track = request.values.get("track")
             f = request.files["file-open"]
             t = str(int(time.time()))   
             try:
                 os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/raw')
             except:
                 pass
-            filename = serverPath + 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
-            f.save(filename)
-            session["filename"] = filename
+            filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
+            f.save(filename) 
             try:
-                #Find the file length
-                fileLength = public.AudioCenter.AudioCenter.AudioTools.length(session["filename"])
+                fileLength = AudioTools.length(filename)
+                if track == "new":
+                    a = session["filename"]
+                    a.append(filename)
+                    session["filename"] = a
+                    print(session["filename"])
+                else:
+                    session["filename"][int(track)] = filename
             except:
-                errors.append("Oops! You uploaded an invalid file.")
-                session["filename"] = ""
+                error = "Oops! File format not supported."
         elif request.values.get("form") == "2":
             #Below code governs applying effects to audio
             print("Checkpoint 3")
             if session["filename"] != None:
-                if request.values.get("type") == "KEYCHANGE":
-                    #Steps for key change, which is governed by the modal in /editor
+                print(request.values)
+                #effectStart = int(request.values.get('effectsStartPoint'))
+                #effectEnd = int(request.values.get('effectsEndPoint'))
+                #effectWidth = int(request.values.get('effectsTotalWidth'))
+
+                if request.values.get("download"):
+                    dt = request.values.get("download-type")
+                    track = request.values.getlist("track")
+                    downloads = []
+                    for i in track:
+                        downloads.append(session["filename"][int(i)])
+                    if dt == 'm':
+                        downloads = [AudioTools.combine(downloads, 'static/audio/' + session["userData"]["username"] + '/output/')]
+                    return render_template('download.html.j2', downloads=downloads, next='editor')
+                elif request.values.get("savepost"):
+                    #Post title validation (since post title will later be stored in a filename path)
+                    invalidChars = ["#", "%", "&", "{", "}", "\\", "<", ">", "*", "?", "/", "$", "!", "\'", "\"", ":", "@", "+", "`", "|", "="]
+                    title = request.values.get("posttitle")
+                    if any(char in title for char in invalidChars): 
+                        error = "Oops! You've put an invalid character in your post title."
+                    elif len(title) == 0: 
+                        #Server side validation
+                        error = "Oops! Post has no title."
+                    else:
+                        track = request.values.getlist("track")
+                        try:
+                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
+                        except:
+                            pass
+                        try:
+                            os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                        except:
+                            pass
+                        trackFiles = []
+                        for i in track:
+                            trackFiles.append(session["filename"][int(i)])
+                        trackfile = AudioTools.combine(trackFiles, 'static/audio/' + session["userData"]["username"] + '/output/')
+                        executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
+                        AudioTools.saveFile(trackfile, 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                elif request.values.get("cut"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    for i in track:
+                        AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'delete')
+                elif request.values.get("key-change"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    selectType = request.values.get("select-type")
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     try:
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    #Key change...
-                    output = public.AudioCenter.AudioCenter.AudioTools.keyChange(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', steps)
-                    session["filename"] = output[0]
-                    #... and return the file name
-                    return output[0]
-                elif request.values.get("type") == "AMPLIFY":
-                    #Amplification data from modal
+                    for i in track:
+                        if selectType == 'f':
+                            output = AudioTools.keyChange(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
+                            session["filename"][int(i)] = output
+                        elif selectType == 's':
+                            output = AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'key', steps)
+                            session["filename"][int(i)] = output
+                elif request.values.get("amplify"):
+                    track = request.values.getlist("track")
                     factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
                     out["type"] = "files"
                     try:
-                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    #Amplify 
-                    output = public.AudioCenter.AudioCenter.AudioTools.amplify(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
-                    session["filename"] = output[0]
-                    return output[0]
-                elif request.values.get("savepost"):
-                    #Saving a post
-                    #Different from rest in that this is not an ajax request
-                    print("Checkpoint 4")
-                    #Post title validation (since post title will later be stored in a filename path)
-                    invalidChars = ["#", "%", "&", "{", "}", "\\", "<", ">", "*", "?", "/", "$", "!", "\'", "\"", ":", "@", "+", "`", "|", "="]
-                    title = request.values.get("posttitle")
-                    if any(char in title for char in invalidChars): 
-                        errors.append("Oops! You've put an invalid character in your post title.")
-                    elif len(title) == 0: 
-                        #Server side validation
-                        errors.append("Oops! Post has no title.")
-                    else:
-                        try:
-                            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/save')
-                        except:
-                            pass
-                        try:
-                            os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
-                        except:
-                            pass
-                        #Insert posts
-                        if session["userData"]["username"] == "guest": 
-                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", 'https://2223.lakeside-cs.org/AudioCenter/AudioCenter/static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                        else: 
-                            executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'https://2223.lakeside-cs.org/AudioCenter/AudioCenter/static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                        public.AudioCenter.AudioCenter.AudioTools.saveFile(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
-                elif request.values.get("type") == "SPLIT":
-                    #Split tracks
+                    for i in track:
+                        output = AudioTools.amplify(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                        session["filename"][int(i)] = output
+                elif request.values.get("split-tracks"):
+                    track = request.values.getlist("track")
                     out["type"] = "files"
                     try:
-                        os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = public.AudioCenter.AudioCenter.AudioTools.split(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', 2)
-                    session["filename"] = output[0]
-                    return output[0]
-                elif request.values.get("type") == "SPEEDCHANGE":
-                    #Speed change
+                    for i in track:
+                        output = AudioTools.split(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
+                        a = session["filename"]
+                        a[int(i)] = output[0]
+                        a.insert(int(i)+1, output[1])
+                        session["filename"] = a
+                elif request.values.get("speed-change"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    selectType = request.values.get("select-type")
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
                     try:
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = public.AudioCenter.AudioCenter.AudioTools.changeSpeed(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
-                    session["filename"] = output[0]
-                    return output[0]
+                    for i in track:
+                        if selectType == 'f':
+                            output = AudioTools.changeSpeed(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                            session["filename"][int(i)] = output
+                        elif selectType == 's':
+                            output = AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'speed', factor)
+                            session["filename"][int(i)] = output
+                elif request.values.get("delete-track"):
+                    track = request.values.get("track")
+                    a = session["filename"]
+                    del a[int(track)]
+                    session["filename"] = a
             else:
-                errors.append("You have not uploaded a file.")
-        if request.values.get("hide") is not None:
-            session["filename"] = ""
-        if request.values.get("delete") is not None:
-            public.AudioCenter.AudioCenter.AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')))
-    out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, errors=errors, userData=session["userData"], fileLength = fileLength)
+                error = "Oops! You have not uploaded a file."
+        if len(session["filename"]) > 4:
+            session["filename"] = session["filename"][0:4]
+            error = 'Oops! You have reached the limit of 4 tracks.'
+    out["output"] = session["filename"]
+    return render_template('editor.html.j2', t=request.method, out=out, error=error, userData=session["userData"], fileLength = fileLength)
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 
@@ -329,20 +409,26 @@ def login():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     verifySessions()
+    error = ''
     if not session["userData"]["loggedIn"]:
         #Not logged in
         return(redirect(url_for("login")))
     if request.method == "POST":
         if request.values.get("formnum") == "0":
             f = request.files["file-input"]
-            #Profile picture display
-            try:
-                os.mkdir(serverPath + 'static/images/pfps/' + session["userData"]["username"])
-            except:
-                pass
-            filename = serverPath + 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
-            f.save(filename)
-            executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
+            #profile picture display
+            filen = int(f.seek(0, os.SEEK_END))
+            f.seek(0, os.SEEK_SET)
+            if filen < 1000000:
+                try:
+                    os.mkdir('static/images/pfps/' + session["userData"]["username"])
+                except:
+                    pass
+                filename = 'static/images/pfps/' + session["userData"]["username"] + '/pfp.png'
+                f.save(filename)
+                executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
+            else:
+                error = 'Oops! File too large. Please upload a file smaller than 1 mb.'
         elif request.values.get("formnum") == "1":
             #New account
             newUsername = request.values.get("username")
@@ -362,20 +448,19 @@ def profile():
             if newPlace != "":
                 executeQuery("UPDATE audiocenter_users SET place=%s WHERE username=%s", (newPlace, session["userData"]["username"]))
             if newWebsite != "":
-                executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
+                import validators
+                if not validators.url(newWebsite):
+                    error = 'Oops! Please enter a valid URL.'
+                else:
+                    executeQuery("UPDATE audiocenter_users SET website=%s WHERE username=%s", (newWebsite, session["userData"]["username"]))
     session["userData"] = userData(session["userData"]["username"], True).createDict()
     res = []
     spinoff = True
-    dir_path = serverPath + 'static/audio/' + session["userData"]["username"] + '/save'
-    # Iterate directory, creating a saved audio bank
-    for (dirpath, dir_names, file_names) in os.walk(dir_path):
-        for i in dir_names:
-            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
-            #res.append(metadata)
-            res.append('post')
+    dir_path = 'static/audio/' + session["userData"]["username"] + '/save'
+    res = genPosts('2', 0, session["userData"]["username"], 2)
     if len(res) > 0:
         spinoff = False
-    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], files = res, path = dir_path, spinoff=spinoff)
+    return render_template('profile.html.j2', edit=True, userData=session["userData"], userToShowData=session["userData"], posts = res, path = dir_path, spinoff=spinoff, error=error)
 
 #Signup
 @app.route('/signup', methods=['GET', 'POST'])
@@ -417,17 +502,17 @@ def userShow(userToShow):
     data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (userToShow,))
     print("DATA:")
     if len(data) == 0:
-        return render_template('index.html.j2', userData=session["userData"], errors=['User not found.'])
+        return render_template('index.html.j2', userData=session["userData"], error='Oops! User not found.')
     userToShowData = userData(userToShow, False).createDict()
-    dir_path = serverPath + 'static/audio/' + userToShow + '/save'
-    res = []
-    # Iterate directory
-    for (dirpath, dir_names, file_names) in os.walk(dir_path):
-        for i in dir_names:
-            #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
-            #res.append(metadata)
-            res.append('post')
-    return render_template('profile.html.j2', spinoff=True, edit=False, userData=session["userData"], userToShowData=userToShowData, files=res)
+    dir_path = 'static/audio/' + userToShow + '/save'
+    if userToShow in session["userData"]["following"]:
+        res = genPosts('2', 0, userToShow, 0)
+    else:
+        res = genPosts('2', 0, userToShow, 1)
+    spinoff = True
+    if len(res) > 0:
+        spinoff = False
+    return render_template('profile.html.j2', spinoff=False, edit=False, userData=session["userData"], userToShowData=userToShowData, posts=res)
 
 @app.route('/signout', methods=['POST'])
 def signout():
@@ -483,33 +568,57 @@ def like():
     return 'success'
 
 @app.route('/genPosts', methods=['POST'])
-def genPosts(postType):
-    #Generate posts
+def genPosts(postType, startIndex, username, perms):
+    #perms = 0: public, perms = 1: followers only, perms = 2: private
+    permLevels = [["public"], ["public", "followers"], ["public", "followers", "private"]]
     res = []
+    #for you
     if postType == '0':
+        ii = 0
+        br = False
         for i in session["userData"]["following"]:
             userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (i["username"],))
             post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
             for i in post:
-                print(i)
-                print("*********")
-                print(i["id"])
                 liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
-                print(liked)
                 i["liked"] = 0
                 if len(liked) != 0:
                     i["liked"] = liked[0]["like_or_dislike"]
-                res.append(i)
-    else:
-        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
+                if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                    res.append(i)
+                if len(res) == 10:
+                    br = True
+                    break
+                ii += 1
+            if br:
+                break
+    #specific username
+    elif postType == '2':
+        userID = executeQuery("SELECT id FROM audiocenter_users WHERE username=%s", (username,))
+        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id WHERE p.author_id=%s ", (userID[0]["id"],))
+        ii = 0
         for i in post:
-            print(i)
-            print("*********")
-            print(i["id"])
             liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
-            print(liked)
             i["liked"] = 0
             if len(liked) != 0:
                 i["liked"] = liked[0]["like_or_dislike"]
-            res.append(i)
+            if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                res.append(i)
+            if len(res) == 10:
+                break
+            ii += 1
+    #trending
+    else:
+        post = executeQuery("SELECT * FROM audiocenter_posts p JOIN audiocenter_users u ON u.id=p.author_id ORDER BY likes DESC", ())
+        ii = 0
+        for i in post:
+            liked = executeQuery("SELECT like_or_dislike FROM audiocenter_likes WHERE user_id=%s AND post_id=%s", (session["userData"]["id"], i["id"]))
+            i["liked"] = 0
+            if len(liked) != 0:
+                i["liked"] = liked[0]["like_or_dislike"]
+            if ii >= startIndex and i["visibility"] in permLevels[perms]:
+                res.append(i)
+            if len(res) == 10:
+                break
+            ii += 1
     return res

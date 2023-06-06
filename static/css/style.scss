@@ -8,10 +8,20 @@ html
     height:100%; 
 }
 
-#waveform {
+.track {
+    border-radius: 5px;
+    border: solid 2px yellow;
+}
+
+.track-controls {
+    background-color: gray;
+}
+
+.waveform {
     background-color: black;
-    padding-top: 10px;
-    padding-bottom: 10px;
+}
+.waveform:hover {
+    cursor: text;
 }
 body
 {
