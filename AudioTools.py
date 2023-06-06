@@ -21,10 +21,12 @@ if server:
     serverPath = "./public/AudioCenter/AudioCenterLocal/"
 
 def saveFile(file, output):
+    #Saves file at output
     song, fs = librosa.load(file)
     wavfile.write(output+"/audio.wav", fs, song)
 
 def mp3towav(file):
+    #Converts wav to mp3
     output = os.path.splitext(file)[0] + ".wav"
     err = subprocess.call(['ffmpeg', '-i', file, output])
     return (output, err)
@@ -32,6 +34,7 @@ def mp3towav(file):
 async def songDetectAsync(file):
     shazam = Shazam()
     start = time.time()
+    #Powered by Shazam recognition
     out = await shazam.recognize_song(file)
     end = time.time()
     output = dict()
@@ -52,6 +55,7 @@ def trimSong(originalWavPath, newWavPath):
     return trim
 
 def makeCut(filepath, startpoint, endpoint, width):
+    #Cut audio function
     sound = AudioSegment.from_file(filepath)
     print(startpoint)
     print(endpoint)
@@ -76,12 +80,15 @@ def keyChange(file, output, steps):
     pathFound = False
     y, sr = librosa.load(file)
     y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
+    #First of many codeblocks like this
+    #This is to avoid filename endings such as "/keychange/keychange.wav," which can cause folder confusion
     if (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "keychange") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "amplify") and (file.split("/")[len(file.split("/"))-1].split(".w")[0] != "speedChange"): 
         path = output+file.split("/")[len(file.split("/"))-1].split(".w")[0]
     else:
         path = output+file.split("/")[len(file.split("/"))-2]+"1"
     if os.path.exists(path):
         pathFound = True 
+    #pathFound looks redundant, but this is actually necessary to remove a file permission error
     if pathFound: 
         shutil.rmtree(path)
     os.mkdir(path)
@@ -112,6 +119,8 @@ def length(file):
 
 #Function from https://stackoverflow.com/questions/60352850/wave-error-unknown-format-3-arises-when-trying-to-convert-a-wav-file-into-text
 def float2pcm(sig, dtype='int16'): 
+    #This function converts a 32-bit float audio file into a 16-bit integer audio file
+    #Necessary for the tools in amplify to work with librosa (keychange and speedchange)
     sig = np.asarray(sig) 
     dtype = np.dtype(dtype)
     i = np.iinfo(dtype)
@@ -129,6 +138,7 @@ def amplify(file, output, factor):
         path = output+prospectPath
     else:
         path = output+file.split("/")[len(file.split("/"))-2]+"1"
+    #Thank you to the wave module tutorials for letting us know how to work with .wav files!
     with wave.open(file, 'rb') as wav:
         p = wav.getparams()
         if os.path.exists(path):
@@ -149,6 +159,7 @@ def combine(sound1, sound2):
     mixed.export("mixed.wav", format='wav')
 
 def split(file, output, stems):
+    #Spleeter
     separator = Separator('spleeter:'+str(stems)+'stems')
     audio_loader = AudioAdapter.default()
     sample_rate = 44100
@@ -172,7 +183,7 @@ def changeSpeed(file, output, factor):
         shutil.rmtree(path)
     os.mkdir(path)
     song, fs = librosa.load(file)
-
+    #time_stretch corresponds to speed changing
     changed = librosa.effects.time_stretch(song, factor)
     print(changed)
     print(changed.astype(np.float16))
@@ -180,6 +191,8 @@ def changeSpeed(file, output, factor):
     return [path+'/speedChange.wav']
 
 def specGen(ratio, audio):
+    #Spectrogram generator
+    #A lot of the code in this function is from https://learnpython.com/blog/plot-waveform-in-python/
     wav_obj = wave.open(audio, 'rb')
     sample_freq = wav_obj.getframerate()
     n_samples = wav_obj.getnframes()

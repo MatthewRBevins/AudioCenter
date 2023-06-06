@@ -242,6 +242,7 @@
     <script>
 	    let t = "NONE"; 
         var keyButton = document.getElementById("clickmekey");
+        /* Resets progress bar every time */
         keyButton.onclick = function() {
             alertModal(1.1*{{fileLength}} + 15);
         } 
@@ -251,6 +252,7 @@
             $('#endPoint').val(endCut)
             $('#deleteForm').submit()
         })
+        /* Changes watch mode to split */
     	function split() {
             t = "SPLIT";
             console.log(t);
@@ -311,6 +313,7 @@
             wavesurfer.zoom(zoomLevel)
         }
         
+        /* Show keychange modal */
         function showKey() {
 	        t = "KEYCHANGE"; 
             if(!($("#hiddenKeyChange").is(":visible"))){
@@ -324,6 +327,7 @@
                 }
             }
 
+        /* Show speedchange modal */
         function showSpeed() {
 	        t = "SPEEDCHANGE"; 
             $("#hiddenSpeedChange").show();
@@ -336,16 +340,19 @@
                 
             }   
 
+        /* Show split modal */
         function showSplit() {
             t = "SPLIT"; 
             closeModal(); 
             $("#hiddenSplit").show();
         }
 
+        /* Default reset that sets mode to save post */
         function reset() {
             t = "SAVE"; 
         }
-            
+
+        /* Show amplify modal */            
         function showAmp() {
 	        t = "AMPLIFY"; 
             $("#hiddenAmplify").show();
@@ -358,6 +365,7 @@
                 
             }
 
+        /* Close all open modals */
 	    function closeModal(){
             $("#exampleModal").modal('hide');
             $("#ampModal").modal('hide');
@@ -366,6 +374,7 @@
             $("#splitModal").modal('hide');
         };
 
+        /* On submit of form, do not reload page if not in savepost mode (for AJAX) */
         $('#matthew').on("submit", (e)=>{
             if(t != "SAVE") {
                 e.preventDefault();
@@ -373,10 +382,14 @@
             } 
         })
         
+        /* AJAX Function*/ 
         function matthewRBevins() {
             console.log("Run");
+            /* Get data */
             var fd = new FormData(document.getElementById("matthew"))
+            /* Append action type */
             fd.append("type", t); 
+            /* Debugging purposes */
             for (var pair of fd.entries()) {
                 console.log(pair[0]+ ', ' + pair[1]); 
             }
@@ -391,6 +404,7 @@
                     closeModal()
                     console.log(result)
                     console.log("SUCCESS")
+                    /* Load waveform */
                     wavesurfer.load(result)
                     console.log("LOADED")
                 },

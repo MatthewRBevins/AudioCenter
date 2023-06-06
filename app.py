@@ -39,6 +39,7 @@ def executeQuery(query, queryVars):
     return cursor.fetchall()
 
 class userData:
+    #Keeps track of session variables for easy access later
     def __init__(self, username, loggedIn):
         self.username = username
         self.loggedIn = loggedIn
@@ -94,6 +95,7 @@ def index():
     res = []
     spinoff = False
     if session["userData"]["loggedIn"]:
+        #Social feed is an exclusive login feature!
         res = genPosts(request.values.get('posttype'))
         if len(res) > 1: 
             spinoff = True
@@ -101,6 +103,7 @@ def index():
 
 @app.route('/detect', methods=["GET","POST"])
 def detect():
+    #Detect song
     verifySessions()
     output = None
     out = dict() 
@@ -108,7 +111,6 @@ def detect():
     scroll = False
     if request.method == "POST":
         scroll = True
-        #print("HI")
         f = request.files["file"]
         t = str(int(time.time()))   
         try:
@@ -127,11 +129,14 @@ def detect():
         trimmedFilename = serverPath + 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
         proxy = open(trimmedFilename, "w")
         try:
+            #To make detect faster, we only pass the first 20 seconds of the song into Shazam
             public.AudioCenter.AudioCenter.AudioTools.trimSong(session["filename"], trimmedFilename)
         except:
+            #File validation!
             error = 'Oops! File format not supported.'
         session["filename"] = trimmedFilename
         try:
+            #Actual detection
             output = public.AudioCenter.AudioCenter.AudioTools.detectSong(session["filename"])
         except:
             error = 'Oops! File format not supported.'
@@ -144,6 +149,7 @@ def detect():
 
 @app.route('/convert', methods=["GET","POST"])
 def convert():
+    #Convert page
     verifySessions()
     output = None
     out = dict() 
@@ -167,6 +173,7 @@ def convert():
         session["filename"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
+            #mp3/m4a to wav
             converted = public.AudioCenter.AudioCenter.AudioTools.mp3towav(session["filename"])
             if converted[1] == 1:
                 error = 'Oops! File format not supported.'
@@ -185,6 +192,7 @@ def editor():
     print("Checkpoint 1")
     fileLength = 0
     try:
+        #See if file has been uploaded yet
         output = [session["filename"]]
         out = dict() 
         fileLength = public.AudioCenter.AudioCenter.AudioTools.length(output[0])
@@ -194,6 +202,7 @@ def editor():
     if request.method == "POST":
         print("Checkpoint 2")
         if request.values.get("form") == "1":
+            #File upload
             f = request.files["file-open"]
             t = str(int(time.time()))   
             try:
@@ -204,24 +213,30 @@ def editor():
             f.save(filename)
             session["filename"] = filename
             try:
+                #Find the file length
                 fileLength = public.AudioCenter.AudioCenter.AudioTools.length(session["filename"])
             except:
                 errors.append("Oops! You uploaded an invalid file.")
                 session["filename"] = ""
         elif request.values.get("form") == "2":
+            #Below code governs applying effects to audio
             print("Checkpoint 3")
             if session["filename"] != None:
                 if request.values.get("type") == "KEYCHANGE":
+                    #Steps for key change, which is governed by the modal in /editor
                     steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     try:
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
+                    #Key change...
                     output = public.AudioCenter.AudioCenter.AudioTools.keyChange(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', steps)
                     session["filename"] = output[0]
+                    #... and return the file name
                     return output[0]
                 elif request.values.get("type") == "AMPLIFY":
+                    #Amplification data from modal
                     factor = float(request.values.get("factorAmp"))
                     print("****************AMPLIFY")
                     out["type"] = "files"
@@ -229,16 +244,21 @@ def editor():
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
+                    #Amplify 
                     output = public.AudioCenter.AudioCenter.AudioTools.amplify(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/output/', factor)
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("savepost"):
+                    #Saving a post
+                    #Different from rest in that this is not an ajax request
                     print("Checkpoint 4")
+                    #Post title validation (since post title will later be stored in a filename path)
                     invalidChars = ["#", "%", "&", "{", "}", "\\", "<", ">", "*", "?", "/", "$", "!", "\'", "\"", ":", "@", "+", "`", "|", "="]
                     title = request.values.get("posttitle")
                     if any(char in title for char in invalidChars): 
                         errors.append("Oops! You've put an invalid character in your post title.")
                     elif len(title) == 0: 
+                        #Server side validation
                         errors.append("Oops! Post has no title.")
                     else:
                         try:
@@ -249,12 +269,14 @@ def editor():
                             os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                         except:
                             pass
+                        #Insert posts
                         if session["userData"]["username"] == "guest": 
                             executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), "public", 'https://2223.lakeside-cs.org/AudioCenter/AudioCenter/static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
                         else: 
                             executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'https://2223.lakeside-cs.org/AudioCenter/AudioCenter/static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
                         public.AudioCenter.AudioCenter.AudioTools.saveFile(session["filename"], serverPath + 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                 elif request.values.get("type") == "SPLIT":
+                    #Split tracks
                     out["type"] = "files"
                     try:
                         os.mkdir(serverPath + 'static/audio/' + session["userData"]["username"] + '/output')
@@ -264,6 +286,7 @@ def editor():
                     session["filename"] = output[0]
                     return output[0]
                 elif request.values.get("type") == "SPEEDCHANGE":
+                    #Speed change
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
                     try:
@@ -287,10 +310,12 @@ def editor():
 def login(): 
     verifySessions()
     if session["userData"]["loggedIn"]:
+        #Already logged in
         return(redirect(url_for("profile")))
     if request.method=="GET": 
         return render_template("login.html.j2", userData=session["userData"])
     elif request.method=="POST": 
+        #Checks login credentials
         userput=request.values.get("username") 
         passput=request.values.get("paswd") 
         passwdsha=hashlib.sha256(passput.encode('utf-8')).hexdigest()
@@ -305,10 +330,12 @@ def login():
 def profile():
     verifySessions()
     if not session["userData"]["loggedIn"]:
+        #Not logged in
         return(redirect(url_for("login")))
     if request.method == "POST":
         if request.values.get("formnum") == "0":
             f = request.files["file-input"]
+            #Profile picture display
             try:
                 os.mkdir(serverPath + 'static/images/pfps/' + session["userData"]["username"])
             except:
@@ -317,12 +344,14 @@ def profile():
             f.save(filename)
             executeQuery("UPDATE audiocenter_users SET pfp=%s WHERE username=%s", (True,session["userData"]["username"]))
         elif request.values.get("formnum") == "1":
+            #New account
             newUsername = request.values.get("username")
             if newUsername != "":
                 data = executeQuery("SELECT * FROM audiocenter_users WHERE username=%s", (newUsername,))
                 if len(data) == 0 or (len(data) == 1 and data[0]["username"] == session["userData"]["username"]):
                     executeQuery("UPDATE audiocenter_users SET username=%s WHERE username=%s", (newUsername, session["userData"]["username"]))
                     session["userData"] = userData(newUsername, True).createDict()
+        #User info
         elif request.values.get("formnum") == "2":
             newBio = request.values.get("bio")
             if newBio != "":
@@ -338,7 +367,7 @@ def profile():
     res = []
     spinoff = True
     dir_path = serverPath + 'static/audio/' + session["userData"]["username"] + '/save'
-    # Iterate directory
+    # Iterate directory, creating a saved audio bank
     for (dirpath, dir_names, file_names) in os.walk(dir_path):
         for i in dir_names:
             #metadata = json.load(open(dirpath + '/' + i + '/metadata.json'))
@@ -402,11 +431,13 @@ def userShow(userToShow):
 
 @app.route('/signout', methods=['POST'])
 def signout():
+    #Sign out
     session["userData"] = userData("guest", False).createDict()
     return redirect(url_for("index"))
 
 @app.route('/follow', methods=['POST'])
 def follow():
+    #Following data
     if session["userData"]["loggedIn"]:
         followingID = request.values.get("following")
         l = executeQuery("SELECT * FROM audiocenter_followers WHERE follower_id=%s AND following_id=%s", (session["userData"]["id"], followingID))
@@ -418,6 +449,7 @@ def follow():
 
 @app.route('/like', methods=['POST'])
 def like():
+    #Likes
     print("&&&&&&&&&&&&&&&")
     print(request.values.get("postID"))
     diff = int(request.values.get("prev"))-int(request.values.get("likeOrDislike"))
@@ -452,6 +484,7 @@ def like():
 
 @app.route('/genPosts', methods=['POST'])
 def genPosts(postType):
+    #Generate posts
     res = []
     if postType == '0':
         for i in session["userData"]["following"]:
