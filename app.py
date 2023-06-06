@@ -20,6 +20,9 @@ app.config['MYSQL_DB']='2223project_1'
 app.config['MYSQL_CURSORCLASS']='DictCursor'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
+app.config['TESTING'] = True
 app.secret_key = "secret"
 mysql = MySQL(app) 
 
@@ -81,6 +84,14 @@ def verifySessions():
         session["filename"]
     except KeyError:
         session["filename"] = None
+    try:
+        session["detect"]
+    except KeyError:
+        session["detect"] = None
+    try:
+        session["convert"]
+    except KeyError:
+        session["convert"] = None
     print("DONE")
 
 @app.route('/')
@@ -110,8 +121,8 @@ def detect():
             pass
         filename = 'static/audio/' + session["userData"]["username"] + '/detect/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
         f.save(filename) 
-        session["filename"] = filename
-        originalFilename = session["filename"] 
+        session["detect"] = filename
+        originalFilename = session["detect"] 
         t = str(int(time.time()))
         try:
             os.mkdir('static/audio/' + session["userData"]["username"] + '/detect/trimmed/')
@@ -120,20 +131,20 @@ def detect():
         trimmedFilename = 'static/audio/' + session["userData"]["username"] + '/detect/trimmed/' + f.filename.split('.')[0] + ' [' + t + '].wav'
         proxy = open(trimmedFilename, "w")
         try:
-            AudioTools.trimSong(session["filename"], trimmedFilename)
+            AudioTools.trimSong(session["detect"], trimmedFilename)
         except:
             error = 'Oops! File format not supported.'
-        session["filename"] = trimmedFilename
+        session["detect"] = trimmedFilename
         try:
-            output = AudioTools.detectSong(session["filename"])
+            output = AudioTools.detectSong(session["detect"])
         except:
             error = 'Oops! File format not supported.'
         out["type"] = "detect"
-        session["filename"] = originalFilename
+        session["detect"] = originalFilename
         out["output"] = output
         if output == None and error == '':
             error = 'Oops! Song not detected.'
-    return render_template('detect.html.j2', fn=session["filename"], userData=session["userData"], out=out, error=error)
+    return render_template('detect.html.j2', fn=session["detect"], userData=session["userData"], out=out, error=error)
 
 @app.route('/convert', methods=["GET","POST"])
 def convert():
@@ -157,35 +168,34 @@ def convert():
             f.save(filename) 
         except:
             pass
-        session["filename"] = filename
+        session["convert"] = filename
         out["type"] = "convert"
         if extension.lower() != ".wav":
-            converted = AudioTools.mp3towav(session["filename"])
+            converted = AudioTools.mp3towav(session["convert"])
             if converted[1] == 1:
                 error = 'Oops! File format not supported.'
-                out["output"] = session["filename"]
+                out["output"] = session["convert"]
             else:
                 out["output"] = converted[0]
         else:
-            out["output"] = session["filename"]
+            out["output"] = session["convert"]
         basename = os.path.basename(out["output"])
         
-    return render_template('convert.html.j2', error=error, fn=session["filename"], userData=session["userData"], out=out, base=basename)
+    return render_template('convert.html.j2', error=error, fn=session["convert"], userData=session["userData"], out=out, base=basename)
 
 @app.route('/editor', methods=["GET", "POST"])
 def editor():
     verifySessions()
     fileLength = 0
-    try:
-        output = [session["filename"]]
-        out = dict() 
-        fileLength = AudioTools.length(output[0])
-    except:
-        error = 'Oops! File format not supported.'
-        pass
+    output = []
+    out = dict()
     error = ''
+    print(session["filename"])
+    if session["filename"] == None:
+        session["filename"] = []
     if request.method == "POST":
         if request.values.get("form") == "1":
+            track = request.values.get("track")
             f = request.files["file-open"]
             t = str(int(time.time()))   
             try:
@@ -194,45 +204,36 @@ def editor():
                 pass
             filename = 'static/audio/'  + session["userData"]["username"] + '/raw/' + f.filename.split('.')[0] + ' [' + t + '].' + f.filename.split('.')[1]
             f.save(filename) 
-            session["filename"] = filename
             try:
-                fileLength = AudioTools.length(session["filename"])
+                fileLength = AudioTools.length(filename)
+                if track == "new":
+                    a = session["filename"]
+                    a.append(filename)
+                    session["filename"] = a
+                    print(session["filename"])
+                else:
+                    session["filename"][int(track)] = filename
             except:
-                session["filename"] = ""
                 error = "Oops! File format not supported."
+                
         elif request.values.get("form") == "2":
             if session["filename"] != None:
                 print(request.values)
-                effectStart = int(request.values.get('effectsStartPoint'))
-                effectEnd = int(request.values.get('effectsEndPoint'))
-                effectWidth = int(request.values.get('effectsTotalWidth'))
-                
-                if request.values.get("key-change"):
-                    steps = int(request.values.get("steps"))
-                    out["type"] = "files"
-                    try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
-                    except:
-                        pass
+                #effectStart = int(request.values.get('effectsStartPoint'))
+                #effectEnd = int(request.values.get('effectsEndPoint'))
+                #effectWidth = int(request.values.get('effectsTotalWidth'))
 
-                    if effectWidth == 0:
-                        output = AudioTools.keyChange(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
-                        session["filename"] = output[0]
-                    else:
-                        AudioTools.makeCut(session["filename"], effectStart, effectEnd, effectWidth, 'key', steps)
-
-                    
-                elif request.values.get("amplify"):
-                    factor = float(request.values.get("factorAmp"))
-                    print("****************AMPLIFY")
-                    out["type"] = "files"
-                    try:
-                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
-                    except:
-                        pass
-                    output = AudioTools.amplify(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
-                    session["filename"] = output[0]
+                if request.values.get("download"):
+                    dt = request.values.get("download-type")
+                    track = request.values.getlist("track")
+                    downloads = []
+                    for i in track:
+                        downloads.append(session["filename"][int(i)])
+                    if dt == 'm':
+                        downloads = [AudioTools.combine(downloads, 'static/audio/' + session["userData"]["username"] + '/output/')]
+                    return render_template('download.html.j2', downloads=downloads, next='editor')
                 elif request.values.get("savepost"):
+                    track = request.values.getlist("track")
                     try:
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/save')
                     except:
@@ -241,37 +242,121 @@ def editor():
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
                     except:
                         pass
+                    trackFiles = []
+                    for i in track:
+                        trackFiles.append(session["filename"][int(i)])
+                    trackfile = AudioTools.combine(trackFiles, 'static/audio/' + session["userData"]["username"] + '/output/')
                     executeQuery("INSERT INTO audiocenter_posts(author_id, title, body, visibility, filepath) VALUES(%s, %s, %s, %s, %s)", (session["userData"]["id"], request.values.get("posttitle"), request.values.get("postbody"), request.values.get("vis"), 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle") + '/audio.wav'))
-                    AudioTools.saveFile(session["filename"], 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
-                elif request.values.get("split-tracks"):
+                    AudioTools.saveFile(trackfile, 'static/audio/' + session["userData"]["username"] + '/save/' + request.values.get("posttitle"))
+                elif request.values.get("cut"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    for i in track:
+                        AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'delete')
+                elif request.values.get("key-change"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    selectType = request.values.get("select-type")
+                    steps = int(request.values.get("steps"))
                     out["type"] = "files"
                     try:
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    output = AudioTools.split(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
-                    session["filename"] = output[0]
+                    for i in track:
+                        if selectType == 'f':
+                            output = AudioTools.keyChange(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', steps)
+                            session["filename"][int(i)] = output
+                        elif selectType == 's':
+                            output = AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'key', steps)
+                            session["filename"][int(i)] = output
+                elif request.values.get("amplify"):
+                    track = request.values.getlist("track")
+                    factor = float(request.values.get("factorAmp"))
+                    print("****************AMPLIFY")
+                    out["type"] = "files"
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    for i in track:
+                        output = AudioTools.amplify(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                        session["filename"][int(i)] = output
+                elif request.values.get("split-tracks"):
+                    track = request.values.getlist("track")
+                    out["type"] = "files"
+                    try:
+                        os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
+                    except:
+                        pass
+                    for i in track:
+                        output = AudioTools.split(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', 2)
+                        a = session["filename"]
+                        a[int(i)] = output[0]
+                        a.insert(int(i)+1, output[1])
+                        session["filename"] = a
                 elif request.values.get("speed-change"):
+                    s = request.values.get("selected").split(",")
+                    selected = []
+                    ii = 0
+                    iii = 0
+                    for i in s:
+                        if ii == 0:
+                            selected.append([])
+                        selected[iii].append(float(i))
+                        ii+=1
+                        if ii == 3:
+                            ii = 0
+                            iii+=1
+                    track = request.values.getlist("track")
+                    selectType = request.values.get("select-type")
                     factor = float(request.values.get("factorSpeed"))
                     out["type"] = "files"
                     try:
                         os.mkdir('static/audio/' + session["userData"]["username"] + '/output')
                     except:
                         pass
-                    if effectWidth == 0:
-                        output = AudioTools.changeSpeed(session["filename"], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
-                        session["filename"] = output[0]
-                    else:
-                        AudioTools.makeCut(session["filename"], effectStart, effectEnd, effectWidth, 'speed', factor)
-                    
+                    for i in track:
+                        if selectType == 'f':
+                            output = AudioTools.changeSpeed(session["filename"][int(i)], 'static/audio/' + session["userData"]["username"] + '/output/', factor)
+                            session["filename"][int(i)] = output
+                        elif selectType == 's':
+                            output = AudioTools.makeCut(session["filename"][int(i)], selected[int(i)], 'speed', factor)
+                            session["filename"][int(i)] = output
+                elif request.values.get("delete-track"):
+                    track = request.values.get("track")
+                    a = session["filename"]
+                    del a[int(track)]
+                    session["filename"] = a
             else:
                 error = "Oops! You have not uploaded a file."
-        if request.values.get("hide") is not None:
-            session["filename"] = ""
-        if request.values.get("delete") is not None:
-            AudioTools.makeCut(session["filename"], int(request.values.get('startPoint')), int(request.values.get('endPoint')), int(request.values.get('totalWidth')), 'delete')
-    out["output"] = output
-    return render_template('editor.html.j2', t=request.method, fn=session["filename"], out=out, error=error, userData=session["userData"], fileLength = fileLength)
+        if len(session["filename"]) > 4:
+            session["filename"] = session["filename"][0:4]
+            error = 'Oops! You have reached the limit of 4 tracks.'
+    out["output"] = session["filename"]
+    return render_template('editor.html.j2', t=request.method, out=out, error=error, userData=session["userData"], fileLength = fileLength)
 
 #Login
 @app.route('/login', methods=['GET', 'POST']) 

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        {%for i in downloads%}
+        <a href="{{i}}" class="download" download>Download Link: {{i}}</a><br>
+        {%endfor%}
+        <br>
+        <a href="/editor">Return to Editor</a>
+        <script>
+            let a = document.getElementsByClassName("download")
+            for (let i of a) {
+                i.click()
+            }
+        </script>
+    </body>
+</html>

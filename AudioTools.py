@@ -45,28 +45,27 @@ def trimSong(originalWavPath, newWavPath):
     trim = wavfile.write(newWavPath, sampleRate, waveData[0:endSample])
     return trim
 
-def makeCut(filepath, startpoint, endpoint, width, effect, steps=0):
+def makeCut(filepath, cutData, effect, steps=0):
+    print(cutData)
+    #start, end, length
     sound = AudioSegment.from_file(filepath)
+    startpoint = 1000*cutData[0]
+    endpoint = 1000*cutData[1]
     print(startpoint)
+    #print(filepath)
     print(endpoint)
-    print(width)
-    print("****")
-    startpoint = startpoint/width
-    endpoint = endpoint/width
-    soundlength = len(sound)
-    print(startpoint)
-    print(soundlength)
-    print(startpoint*soundlength)
-    selectedsound = sound[int(startpoint*soundlength):int(endpoint*soundlength)]
+    print(len(sound))
+    selectedsound = sound[int(startpoint):int(endpoint)]
     if effect == 'key':
         selectedKeyChange = keyChange(selectedsound, None, steps)
-        finishedcut = sound[:int(startpoint*soundlength)] + selectedKeyChange + sound[int(endpoint*soundlength):]
+        finishedcut = sound[:int(startpoint)] + selectedKeyChange + sound[int(endpoint):]
     elif effect == 'speed':
         selectedSpeedChange = changeSpeed(selectedsound, None, steps)
-        finishedcut = sound[:int(startpoint*soundlength)] + selectedSpeedChange + sound[int(endpoint*soundlength):]
+        finishedcut = sound[:int(startpoint)] + selectedSpeedChange + sound[int(endpoint):]
     else:
-        finishedcut = sound[:int(startpoint*soundlength)] + sound[int(endpoint*soundlength):]
+        finishedcut = sound[:int(startpoint)] + sound[int(endpoint):]
     finishedcut.export(filepath, format='wav')
+    return filepath
     
 
 def detectSong(file):
@@ -76,16 +75,10 @@ def detectSong(file):
 
 def keyChange(file, output, steps):
     if isinstance(file, AudioSegment):
-        y, sr = audiosegment_to_ndarray(file)
-        y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
-        y_shifted = np.array(y_shifted * (1<<15), dtype=np.int16)
-        audio_segment = AudioSegment(
-            y_shifted.tobytes(), 
-            frame_rate=sr,
-            sample_width=y_shifted.dtype.itemsize, 
-            channels=1
-        )
-        return audio_segment
+        y = np.frombuffer(file._data, dtype=np.int16).astype(np.float32)/2**15
+        y = librosa.effects.pitch_shift(y, file.frame_rate, n_steps=steps)
+        a  = AudioSegment(np.array(y * (1<<15), dtype=np.int16).tobytes(), frame_rate = file.frame_rate, sample_width=2, channels = 1)
+        return a
     else:
         y, sr = librosa.load(file)
         y_shifted = librosa.effects.pitch_shift(y, sr, n_steps=steps)
@@ -94,7 +87,7 @@ def keyChange(file, output, steps):
         except:
             pass
         sf.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav", y_shifted, sr, 'PCM_24')
-        return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"]
+        return output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/keychange.wav"
 
 def writeFrames(file, frames, output):
     samplerate = 48000
@@ -130,13 +123,24 @@ def amplify(file, output, factor):
             audio.setparams(p)
             frames = wav.readframes(p.nframes)
             audio.writeframesraw(audioop.mul(frames, p.sampwidth, factor))
-    return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/amplify.wav']
+    return output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/amplify.wav'
 
-def combine(sound1, sound2): 
-    audiosound1 = AudioSegment.from_wav(sound1)
-    audiosound2 = AudioSegment.from_wav(sound2)
-    mixed = audiosound1.overlay(audiosound2) 
-    mixed.export("mixed.wav", format='wav')
+def combine(audio, output):
+    file = audio[0]
+    audiosegments = []
+    for i in audio:
+        audiosegments.append(AudioSegment.from_wav(i))
+    i = 1
+    prev = audiosegments[0]
+    while i < len(audiosegments):
+        prev = prev.overlay(audiosegments[i]) 
+        i+=1
+    try:
+        os.mkdir(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
+    except:
+        pass
+    prev.export(output + file.split("/")[len(file.split("/"))-1].split(".w")[0] + '/combine.wav', format='wav')
+    return output + file.split("/")[len(file.split("/"))-1].split(".w")[0] + '/combine.wav'
 
 def split(file, output, stems):
     separator = Separator('spleeter:'+str(stems)+'stems')
@@ -151,16 +155,10 @@ def split(file, output, stems):
 
 def changeSpeed(file, output, factor):
     if isinstance(file, AudioSegment):
-        y, sr = audiosegment_to_ndarray(file)
-        changed = librosa.effects.time_stretch(y, factor)
-        changed = np.array(changed * (1<<15), dtype=np.int16)
-        audio_segment = AudioSegment(
-            changed.tobytes(), 
-            frame_rate=sr,
-            sample_width=changed.dtype.itemsize, 
-            channels=1
-        )
-        return audio_segment
+        y = np.frombuffer(file._data, dtype=np.int16).astype(np.float32)/2**15
+        y = librosa.effects.time_stretch(y, factor)
+        a  = AudioSegment(np.array(y * (1<<15), dtype=np.int16).tobytes(), frame_rate = file.frame_rate, sample_width=2, channels = 1)
+        return a
     else:
         try:
             os.makedirs(output+file.split("/")[len(file.split("/"))-1].split(".w")[0])
@@ -171,7 +169,7 @@ def changeSpeed(file, output, factor):
         changed = librosa.effects.time_stretch(song, factor)
 
         wavfile.write(output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav", fs, changed) # save the song 
-        return [output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+'/speedChange.wav']
+        return output+file.split("/")[len(file.split("/"))-1].split(".w")[0]+"/speedchange.wav"
 
 def specGen(ratio, audio):
     wav_obj = wave.open(audio, 'rb')
@@ -195,12 +193,7 @@ def audiosegment_to_ndarray(audiosegment):
     samples = audiosegment.get_array_of_samples()
     samples_float = librosa.util.buf_to_float(samples,n_bytes=2,
                                       dtype=np.float32)
-    if audiosegment.channels==2:
-        sample_left= np.copy(samples_float[::2])
-        sample_right= np.copy(samples_float[1::2])
-        sample_all = np.array([sample_left,sample_right])
-    else:
-        sample_all = samples_float
+    sample_all = samples_float
         
         
     return [sample_all,audiosegment.frame_rate]

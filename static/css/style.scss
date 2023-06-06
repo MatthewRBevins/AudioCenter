@@ -17,10 +17,11 @@ html
     background-color: gray;
 }
 
-#waveform {
+.waveform {
     background-color: black;
-    padding-top: 10px;
-    padding-bottom: 10px;
+}
+.waveform:hover {
+    cursor: text;
 }
 body
 {
