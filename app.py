@@ -26,7 +26,7 @@ app.config['TESTING'] = True
 app.secret_key = "secret"
 mysql = MySQL(app) 
 
-server = True #Change to true when it's time to upload to the server
+server = False #Change to true when it's time to upload to the server
 serverPath = ""
 if server:
     serverPath = "./public/AudioCenter/AudioCenter/"
