@@ -105,7 +105,9 @@ def detect():
     output = None
     out = dict() 
     error = ''
+    scroll = False
     if request.method == "POST":
+        scroll = True
         #print("HI")
         f = request.files["file"]
         t = str(int(time.time()))   
@@ -138,7 +140,7 @@ def detect():
         out["output"] = output
         if output == None and error == '':
             error = 'Oops! Song not detected.'
-    return render_template('detect.html.j2', fn=session["filename"], userData=session["userData"], out=out, error=error)
+    return render_template('detect.html.j2', scroll=scroll, fn=session["filename"], userData=session["userData"], out=out, error=error)
 
 @app.route('/convert', methods=["GET","POST"])
 def convert():

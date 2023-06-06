@@ -4,7 +4,10 @@
         <title>Audio Center</title>
 {% endblock %}
 
-{% block body %}        
+{% block body %} 
+    {% if scroll %}
+    <div class="allowover">
+    {% endif %}
     <form method="POST" id="detectForm" enctype="multipart/form-data">
         <input style="display:none" type="file" id="fileInput" name="file" />
     </form>
